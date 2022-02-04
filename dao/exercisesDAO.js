@@ -1,3 +1,5 @@
+import { ObjectId } from "mongodb";
+
 let exercises;
 
 export default class ExercisesDAO {
@@ -23,13 +25,15 @@ export default class ExercisesDAO {
     exercisesPerPage = 10,
   } = {}) {
     let query;
+
     if (filters) {
-      if ("name" in filters) {
-        query = { $text: { $search: filters["name"] } };
+      if ("user" in filters) {
+        query = Object.assign({}, { user: { $eq: ObjectId(filters["user"]) } });
+        if ("name" in filters) {
+          query = Object.assign(query, { $text: { $search: filters["name"] } });
+        }
       }
     }
-
-    console.log(query);
 
     let cursor;
 
@@ -53,6 +57,61 @@ export default class ExercisesDAO {
         `Unable to convert cursor to array or problem counting documents, ${e}`
       );
       return { exercisesList: [], totalNumExercises: 0 };
+    }
+  }
+
+  static async addExercise(exercise) {
+    try {
+      const exerciseDoc = {
+        name: exercise.name,
+        area: exercise.area,
+        muscles: exercise.muscles,
+        type: exercise.type,
+        goalPerSet: exercise.goalPerSet,
+        goalPerWorkout: exercise.goalPerWorkout,
+        user: ObjectId(exercise.user),
+      };
+
+      return await exercises.insertOne(exerciseDoc);
+    } catch (e) {
+      console.error(`Unable to post exercise: ${e}`);
+    }
+  }
+
+  static async updateExercise(exercise) {
+    try {
+      const updateResponse = await exercises.updateOne(
+        { user: exercise.user, _id: ObjectId(exercise.id) },
+        {
+          $set: {
+            name: exercise.name,
+            area: exercise.area,
+            muscles: exercise.muscles,
+            type: exercise.type,
+            goalPerSet: exercise.goalPerSet,
+            goalPerWorkout: exercise.goalPerWorkout,
+          },
+        }
+      );
+
+      return updateResponse;
+    } catch (e) {
+      console.error(`Unable to update exercise: ${e}`);
+      return { error: e };
+    }
+  }
+
+  static async deleteExercise(exerciseId, userId) {
+    try {
+      const deleteResponse = await exercises.deleteOne({
+        _id: ObjectId(exerciseId),
+        user: userId,
+      });
+
+      return deleteResponse;
+    } catch (e) {
+      console.error(`Unable to delete exercise: ${e}`);
+      return { error: e };
     }
   }
 }
