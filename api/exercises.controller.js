@@ -4,7 +4,7 @@ export default class ExercisesController {
   static async apiGetExercises(req, res, next) {
     const exercisesPerPage = req.query.exercisesPerPage
       ? parseInt(req.query.exercisesPerPage, 10)
-      : 20;
+      : 1000;
 
     const page = req.query.page ? parseInt(req.query.page, 10) : 0;
 
@@ -44,7 +44,7 @@ export default class ExercisesController {
         user: req.body.user,
       };
       const ExerciseResponse = await ExercisesDAO.addExercise(exercise);
-      res.json({ status: "success" });
+      res.json({ status: "success", exercise: exercise });
     } catch (e) {
       res.status(500).json({ error: e.message });
     }

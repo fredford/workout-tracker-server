@@ -28,7 +28,15 @@ export default class ExercisesDAO {
 
     if (filters) {
       if ("user" in filters) {
-        query = Object.assign({}, { user: { $eq: ObjectId(filters["user"]) } });
+        query = Object.assign(
+          {},
+          {
+            $or: [
+              { user: { $eq: ObjectId(filters["user"]) } },
+              { user: { $eq: "admin" } },
+            ],
+          }
+        );
         if ("name" in filters) {
           query = Object.assign(query, { $text: { $search: filters["name"] } });
         }
@@ -38,7 +46,7 @@ export default class ExercisesDAO {
     let cursor;
 
     try {
-      cursor = await exercises.find(query);
+      cursor = await exercises.find(query).sort({ name: 1 });
     } catch (e) {
       console.error(`Unable to issue find command, ${e}`);
       return { exercisesList: [], totalNumExercises: 0 };
