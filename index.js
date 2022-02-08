@@ -5,15 +5,15 @@ import dotenv from "dotenv";
 import ExercisesDAO from "./dao/exercisesDAO.js";
 
 // Load ENV file
-dotenv.config();
+//dotenv.config();
 
 // Initiate Mongo Client
-const MongoClient = mongodb.MongoClient;
+//const MongoClient = mongodb.MongoClient;
 
 // Set ENV port
-const port = process.env.port || 8000;
+//const port = process.env.port || 8000;
 
-MongoClient.connect(process.env.WORKOUTTRACKER_DB_URI, {
+/*MongoClient.connect(process.env.WORKOUTTRACKER_DB_URI, {
   maxPoolSize: 50,
   wtimeoutMS: 2500,
   useNewUrlParser: true,
@@ -28,3 +28,4 @@ MongoClient.connect(process.env.WORKOUTTRACKER_DB_URI, {
       console.log(`Listening on port ${port}`);
     });
   });
+*/
