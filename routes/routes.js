@@ -9,8 +9,6 @@ import {
 
 const router = express.Router();
 
-router.route("/").get((req, res) => res.send("hello world"));
-
 //router.route("/workouts").get((req, res) => res.send("workouts"));
 
 //router

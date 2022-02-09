@@ -1,5 +1,6 @@
 import User from "../models/User.js";
 import jwt from "jsonwebtoken";
+import ErrorResponse from "../utils/errorResponse.js";
 
 export const user = async (req, res, next) => {
   const token = req.headers.authorization.split(" ")[1];
@@ -12,6 +13,35 @@ export const user = async (req, res, next) => {
     res.status(200).json({
       success: true,
       data: user,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateUser = async (req, res, next) => {
+  const token = req.headers.authorization.split(" ")[1];
+
+  const updatedUser = req.body;
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    const user = await User.findById(decoded.id);
+
+    if (updatedUser.name.length > 0) {
+      user.name = updatedUser.name;
+    }
+
+    if (updatedUser.password.length > 0) {
+      user.password = updatedUser.password;
+    }
+
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      data: { _id: user._id, name: user.name, email: user.email },
     });
   } catch (error) {
     next(error);
