@@ -23,6 +23,11 @@ const UserSchema = new mongoose.Schema({
     minlength: 6,
     select: false,
   },
+  theme: {
+    type: String,
+    default: "light",
+    enum: ["light", "dark"],
+  },
   resetPasswordToken: String,
   resetPasswordExpire: Date,
 });

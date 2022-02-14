@@ -37,11 +37,20 @@ export const updateUser = async (req, res, next) => {
       user.password = updatedUser.password;
     }
 
+    if (updatedUser.theme.length > 0) {
+      user.theme = updatedUser.theme;
+    }
+
     await user.save();
 
     res.status(200).json({
       success: true,
-      data: { _id: user._id, name: user.name, email: user.email },
+      data: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        theme: user.theme,
+      },
     });
   } catch (error) {
     next(error);
