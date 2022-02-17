@@ -6,6 +6,7 @@ import connectDB from "./config/db.js";
 import routes from "./routes/routes.js";
 import privateRoutes from "./routes/private.js";
 import userRoutes from "./routes/user.js";
+import exercisesRoutes from "./routes/exercises.js";
 
 import errorHandler from "./middleware/error.js";
 
@@ -22,6 +23,7 @@ app.use(express.json());
 app.use("/api/v1", routes);
 app.use("/api/v1/private", privateRoutes);
 app.use("/api/v1", userRoutes);
+app.use("/api/v1", exercisesRoutes);
 
 // Error Handler (last piece of middleware added)
 app.use(errorHandler);
