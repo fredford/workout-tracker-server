@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 const ExerciseSchema = new mongoose.Schema({
   name: {
     type: String,
+    unique: true,
     required: [true, "Please provide a name"],
   },
   area: {

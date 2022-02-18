@@ -21,12 +21,12 @@ export const getExercises = async (req, res, next) => {
       const exercise = await Exercise.find({
         user: decoded.id,
         _id: req.query.id,
-      });
+      }).sort({ name: 1 });
       res.status(200).json({ success: true, data: exercise });
     } else {
       const exercises = await Exercise.find({
         user: { $in: query },
-      });
+      }).sort({ name: 1 });
       res.status(200).json({ success: true, data: exercises });
     }
   } catch (error) {
