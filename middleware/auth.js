@@ -15,7 +15,12 @@ export const protect = async (req, res, next) => {
   }
 
   if (!token) {
-    return next(new ErrorResponse("Not authorized to access this route", 401));
+    return next(
+      new ErrorResponse(
+        "Not authorized to access this route, missing token",
+        401
+      )
+    );
   }
 
   try {
@@ -31,6 +36,8 @@ export const protect = async (req, res, next) => {
 
     next();
   } catch (error) {
-    return next(new ErrorResponse("Not authorized to access this route", 401));
+    return next(
+      new ErrorResponse(`Not authorized to access this route, ${error}`, 401)
+    );
   }
 };
