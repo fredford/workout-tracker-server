@@ -27,6 +27,10 @@ const ExerciseSchema = new mongoose.Schema({
     ref: "User",
     required: true,
   },
+  isAdmin: {
+    type: Boolean,
+    required: [true, "Please provide if set by an Admin"],
+  },
 });
 
 const Exercise = mongoose.model("Exercise", ExerciseSchema);

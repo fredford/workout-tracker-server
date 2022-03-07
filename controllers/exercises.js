@@ -38,12 +38,16 @@ export const getExercises = async (req, res, next) => {
 export const addExercise = async (req, res, next) => {
   const token = req.headers.authorization.split(" ")[1];
 
-  const { name, area, type, goalPerSet, goalPerWorkout } = req.body;
+  const { name, area, type, goalPerSet, goalPerWorkout, user } = req.body;
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    const user = await User.findById(decoded.id);
+    const userId = await User.findById(decoded.id);
+
+    if (userId !== user) {
+      new Error("User ID does not match the auth token provided");
+    }
 
     const exercise = await Exercise.create({
       name,
@@ -52,6 +56,7 @@ export const addExercise = async (req, res, next) => {
       goalPerSet,
       goalPerWorkout,
       user,
+      isAdmin: user === process.env.ADMIN_ID ? true : false,
     });
 
     res.status(201).json({ success: true, data: exercise });
