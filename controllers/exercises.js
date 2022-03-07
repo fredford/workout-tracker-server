@@ -38,7 +38,7 @@ export const getExercises = async (req, res, next) => {
 export const addExercise = async (req, res, next) => {
   const token = req.headers.authorization.split(" ")[1];
 
-  const { name, area, muscles, type, goalPerSet, goalPerWorkout } = req.body;
+  const { name, area, type, goalPerSet, goalPerWorkout } = req.body;
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
@@ -48,16 +48,13 @@ export const addExercise = async (req, res, next) => {
     const exercise = await Exercise.create({
       name,
       area,
-      muscles,
       type,
       goalPerSet,
       goalPerWorkout,
       user,
     });
 
-    res
-      .status(201)
-      .json({ success: true, data: "Exercise added successfully" });
+    res.status(201).json({ success: true, data: exercise });
   } catch (error) {
     console.log(error);
     next(error);

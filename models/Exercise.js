@@ -9,10 +9,6 @@ const ExerciseSchema = new mongoose.Schema({
     type: String,
     required: [true, "Please provide a body area"],
   },
-  muscles: {
-    type: String,
-    required: [true, "Please provide a muscle group"],
-  },
   type: {
     type: String,
     required: [true, "Please provide the workout quantifier type"],
