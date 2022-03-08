@@ -14,14 +14,6 @@ const ExerciseSchema = new mongoose.Schema({
     required: [true, "Please provide the workout quantifier type"],
     enum: ["Repetitions", "Duration"],
   },
-  goalPerSet: {
-    type: Number,
-    required: [true, "Please provide the goal per set"],
-  },
-  goalPerWorkout: {
-    type: Number,
-    required: [true, "Please provide the goal per workout"],
-  },
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",

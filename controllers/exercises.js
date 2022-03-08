@@ -17,11 +17,21 @@ export const getExercises = async (req, res, next) => {
 
     query.push(decoded.id);
 
+    var exercise;
+
     if (req.query.id) {
-      const exercise = await Exercise.find({
+      exercise = await Exercise.find({
         user: decoded.id,
         _id: req.query.id,
       }).sort({ name: 1 });
+
+      if (exercise.length === 0) {
+        exercise = await Exercise.find({
+          user: process.env.ADMIN_ID,
+          _id: req.query.id,
+        }).sort({ name: 1 });
+      }
+
       res.status(200).json({ success: true, data: exercise });
     } else {
       const exercises = await Exercise.find({
@@ -38,7 +48,7 @@ export const getExercises = async (req, res, next) => {
 export const addExercise = async (req, res, next) => {
   const token = req.headers.authorization.split(" ")[1];
 
-  const { name, area, type, goalPerSet, goalPerWorkout, user } = req.body;
+  const { name, area, type, user } = req.body;
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
@@ -53,8 +63,6 @@ export const addExercise = async (req, res, next) => {
       name,
       area,
       type,
-      goalPerSet,
-      goalPerWorkout,
       user,
       isAdmin: user === process.env.ADMIN_ID ? true : false,
     });
