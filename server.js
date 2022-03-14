@@ -7,6 +7,7 @@ import routes from "./routes/routes.js";
 import privateRoutes from "./routes/private.js";
 import userRoutes from "./routes/user.js";
 import exercisesRoutes from "./routes/exercises.js";
+import workoutRoutes from "./routes/workouts.js";
 
 import errorHandler from "./middleware/error.js";
 
@@ -24,6 +25,7 @@ app.use("/api/v1", routes);
 app.use("/api/v1/private", privateRoutes);
 app.use("/api/v1", userRoutes);
 app.use("/api/v1", exercisesRoutes);
+app.use("/api/v1", workoutRoutes);
 
 // Error Handler (last piece of middleware added)
 app.use(errorHandler);
