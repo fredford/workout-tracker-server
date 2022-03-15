@@ -29,7 +29,7 @@ export const getWorkouts = async (req, res, next) => {
     } else {
       const workouts = await Workout.find({
         user: decoded.id,
-      }).sort({ date: 1 });
+      }).sort({ date: -1 });
 
       res.status(200).json({ success: true, data: workouts });
     }
