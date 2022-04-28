@@ -5,6 +5,6 @@ import { protect } from "../middleware/auth.js";
 
 const router = express.Router();
 
-router.route("/sets").get(protect, getSets).post(protect, addSet);
+router.route("/sets/:workoutId").get(protect, getSets).post(protect, addSet);
 
 export default router;

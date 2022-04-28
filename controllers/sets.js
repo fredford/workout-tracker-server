@@ -3,13 +3,12 @@ import Exercise from "../models/Exercise.js";
 
 import Set from "../models/Set.js";
 import User from "../models/User.js";
+import Workout from "../models/Workout.js";
 
 export const getSets = async (req, res, next) => {
   const token = req.headers.authorization.split(" ")[1];
 
-  const { id } = req.query;
-
-  console.log(id);
+  const { workoutId } = req.params;
 
   var query = [];
 
@@ -20,8 +19,11 @@ export const getSets = async (req, res, next) => {
 
     const sets = await Set.find({
       user: { $in: query },
-      workout: id,
-    }).sort({ date: -1 });
+      workout: workoutId,
+    })
+      .populate("workout")
+      .populate("exercise")
+      .sort({ date: -1 });
 
     res.status(200).json({ success: true, data: sets });
   } catch (error) {
@@ -32,25 +34,29 @@ export const getSets = async (req, res, next) => {
 
 export const addSet = async (req, res, next) => {
   const token = req.headers.authorization.split(" ")[1];
-  const { date, exerciseId, amount } = req.body;
 
-  var query = [];
+  const { workoutId } = req.params;
+  const { date, exerciseId, amount } = req.body;
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const userId = await User.findById(decoded.id);
 
     const exercise = await Exercise.findById(exerciseId);
+    const workout = await Workout.findById(workoutId);
 
-    if (!exercise) {
-      new Error("Exercise does not match any existing exercises!");
+    if (!exercise || !workout) {
+      new Error("Exercise or workout do not exist!");
     }
 
     const set = await Set.create({
       date,
-      exerciseId,
+      exercise,
+      workout,
       amount,
     });
+
+    res.status(201).json({ success: true, data: set });
   } catch (error) {
     console.log(error);
     next(error);
