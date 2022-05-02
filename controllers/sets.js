@@ -40,8 +40,6 @@ export const deleteSet = async (req, res, next) => {
 
   const { setId } = req.params;
 
-  console.log(setId);
-
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const userId = await User.findById(decoded.id);
@@ -52,13 +50,9 @@ export const deleteSet = async (req, res, next) => {
       new Error("Set does not exist!");
     }
 
-    console.log(set);
-
     const response = await Set.deleteOne({
       _id: set.id,
     });
-
-    console.log(response);
 
     res.status(200).json({ success: true, data: response });
   } catch (error) {
