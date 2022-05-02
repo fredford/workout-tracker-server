@@ -7,7 +7,8 @@ import routes from "./routes/routes.js";
 import privateRoutes from "./routes/private.js";
 import userRoutes from "./routes/user.js";
 import exercisesRoutes from "./routes/exercises.js";
-import workoutRoutes from "./routes/workouts.js";
+import workoutsRoutes from "./routes/workouts.js";
+import workoutRoutes from "./routes/workout.js";
 import setRoutes from "./routes/sets.js";
 
 import errorHandler from "./middleware/error.js";
@@ -26,6 +27,7 @@ app.use("/api/v1", routes);
 app.use("/api/v1/private", privateRoutes);
 app.use("/api/v1", userRoutes);
 app.use("/api/v1", exercisesRoutes);
+app.use("/api/v1", workoutsRoutes);
 app.use("/api/v1", workoutRoutes);
 app.use("/api/v1", setRoutes);
 
