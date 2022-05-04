@@ -1,6 +1,7 @@
 import jwt from "jsonwebtoken";
 
 import Set from "../models/Set.js";
+import Workout from "../models/Workout.js";
 
 export const getWorkout = async (req, res, next) => {
   const token = req.headers.authorization.split(" ")[1];
@@ -22,6 +23,29 @@ export const getWorkout = async (req, res, next) => {
       .populate("exercise");
 
     res.status(200).json({ success: true, data: sets });
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+};
+
+export const deleteWorkout = async (req, res, next) => {
+  const token = req.headers.authorization.split(" ")[1];
+
+  const { workoutId } = req.params;
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    const response = await Workout.deleteOne({
+      workout: workoutId,
+    });
+
+    const response2 = await Set.deleteMany({
+      workout: workoutId,
+    });
+
+    res.status(200).json({ success: true, data: response });
   } catch (error) {
     console.log(error);
     next(error);
