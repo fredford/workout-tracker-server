@@ -10,6 +10,7 @@ import exercisesRoutes from "./routes/exercises.js";
 import workoutsRoutes from "./routes/workouts.js";
 import workoutRoutes from "./routes/workout.js";
 import setRoutes from "./routes/sets.js";
+import statsRoutes from "./routes/stats.js";
 
 import errorHandler from "./middleware/error.js";
 
@@ -30,6 +31,7 @@ app.use("/api/v1", exercisesRoutes);
 app.use("/api/v1", workoutsRoutes);
 app.use("/api/v1", workoutRoutes);
 app.use("/api/v1", setRoutes);
+app.use("/api/v1", statsRoutes);
 
 // Error Handler (last piece of middleware added)
 app.use(errorHandler);
