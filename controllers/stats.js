@@ -33,7 +33,38 @@ export const getExerciseData = async (req, res, next) => {
       .reduce((prev, next) => prev + next);
 
     output.stats.Total = total;
-    output.stats.Average = Math.total / sets.length;
+    output.stats.Average = (
+      Math.round((total / sets.length) * 100) / 100
+    ).toFixed(2);
+    output.stats.Max = Math.max(...sets.map((set) => Number(set.amount)));
+
+    var resultArr = [];
+    var dateArr = [];
+
+    var cumulativeSum = 0;
+
+    for (const set of sets) {
+      var date = new Date(set.date)
+        .toISOString()
+        .replace(/T/, " ")
+        .split(" ")[0];
+      var index = dateArr.indexOf(date);
+
+      var amount = Number(set.amount);
+
+      console.log(cumulativeSum);
+      if (index == -1) {
+        dateArr.push(date);
+        output.workoutProgression[date] = amount;
+        cumulativeSum += amount;
+
+        output.cumulative[date] = cumulativeSum;
+      } else {
+        output.workoutProgression[date] += amount;
+        cumulativeSum += amount;
+        output.cumulative[date] += amount;
+      }
+    }
 
     res.status(200).json({ success: true, data: output });
   } catch (error) {
