@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 
-import Set from "../models/Set.js";
+import SetModel from "../models/Set.js";
 
 export const getExerciseData = async (req, res, next) => {
   const token = req.headers.authorization.split(" ")[1];
@@ -14,7 +14,7 @@ export const getExerciseData = async (req, res, next) => {
 
     query.push(decoded.id);
 
-    const sets = await Set.find({
+    const sets = await SetModel.find({
       user: { $in: query },
       exercise: exerciseId,
     })
@@ -82,6 +82,90 @@ export const getExerciseData = async (req, res, next) => {
       // Setting the current Set Count with the amount done
       output.setProgression[`${date} Set ${setCounter}`] = amount;
     }
+
+    res.status(200).json({ success: true, data: output });
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+};
+
+export const getDashboardData = async (req, res, next) => {
+  const token = req.headers.authorization.split(" ")[1];
+
+  var query = [];
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    query.push(decoded.id);
+
+    // Get all user sets
+    const sets = await SetModel.find({
+      user: decoded.id,
+    }).populate("exercise");
+
+    // Compute total sets
+    let completedSets = {
+      title: "Sets",
+      subtitle: "Completed",
+      data: sets.length,
+    };
+
+    // Compute total workouts
+    const uniqueWorkouts = [
+      ...new Set(sets.map((set) => set.workout.toString())),
+    ];
+
+    let completedWorkouts = {
+      title: "Workouts",
+      subtitle: "Completed",
+      data: uniqueWorkouts.length,
+    };
+
+    // Compute Top Exercise
+    const distinctExercises = sets.reduce((acc, set) => {
+      acc[set.exercise.name] = acc[set.exercise.name]
+        ? (acc[set.exercise.name] += Number(set.amount))
+        : Number(set.amount);
+      return acc;
+    }, {});
+
+    const maxExercise = Object.keys(distinctExercises).reduce((a, b) =>
+      distinctExercises[a] > distinctExercises[b] ? a : b
+    );
+
+    let topExercise = {
+      title: "Top Exercise",
+      subtitle: maxExercise,
+      data: distinctExercises[maxExercise],
+    };
+
+    // Compute Highest Average
+    const distinctSets = sets.reduce((acc, set) => {
+      acc[set.exercise.name] = acc[set.exercise.name]
+        ? (acc[set.exercise.name] += 1)
+        : 1;
+      return acc;
+    }, {});
+
+    var currMax = 0.0;
+    var currName = "";
+
+    const maxAverage = Object.keys(distinctExercises).map((a) => {
+      let average = distinctExercises[a] / distinctSets[a];
+
+      currName = average > currMax ? a : currName;
+      currMax = average > currMax ? average : currMax;
+    });
+
+    let topAverage = {
+      title: "Top Average",
+      subtitle: currName,
+      data: currMax,
+    };
+
+    let output = [topExercise, topAverage, completedSets, completedWorkouts];
 
     res.status(200).json({ success: true, data: output });
   } catch (error) {
