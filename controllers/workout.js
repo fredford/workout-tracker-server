@@ -38,10 +38,12 @@ export const deleteWorkout = async (req, res, next) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
     const response2 = await Set.deleteMany({
+      user: decoded.id,
       workout: workoutId,
     });
 
     const response = await Workout.deleteOne({
+      user: decoded.id,
       id: workoutId,
     });
 

@@ -103,7 +103,9 @@ export const getDashboardData = async (req, res, next) => {
     // Get all user sets
     const sets = await SetModel.find({
       user: decoded.id,
-    }).populate("exercise");
+    })
+      .populate("workout")
+      .populate("exercise");
 
     // Compute total sets
     let completedSets = {
@@ -112,9 +114,19 @@ export const getDashboardData = async (req, res, next) => {
       data: sets.length,
     };
 
+    // Compute total reps
+
+    const totalReps = sets.reduce((acc, set) => acc + Number(set.amount), 0);
+
+    let totalRepetitions = {
+      title: "Total",
+      subtitle: "Repetitions",
+      data: totalReps,
+    };
+
     // Compute total workouts
     const uniqueWorkouts = [
-      ...new Set(sets.map((set) => set.workout.toString())),
+      ...new Set(sets.map((set) => set.workout._id.toString())),
     ];
 
     let completedWorkouts = {
@@ -162,10 +174,95 @@ export const getDashboardData = async (req, res, next) => {
     let topAverage = {
       title: "Top Average",
       subtitle: currName,
-      data: currMax,
+      data: currMax.toFixed(1),
     };
 
-    let output = [topExercise, topAverage, completedSets, completedWorkouts];
+    // Exercise Data
+    const distinctAreas = sets.reduce((acc, set) => {
+      acc[set.exercise.area] = acc[set.exercise.area]
+        ? (acc[set.exercise.area] += Number(set.amount))
+        : Number(set.amount);
+      return acc;
+    }, {});
+
+    const maxArea = Object.keys(distinctAreas).reduce((a, b) =>
+      distinctAreas[a] > distinctAreas[b] ? a : b
+    );
+
+    let topArea = {
+      title: "Top Area",
+      subtitle: maxArea,
+      data: distinctAreas[maxArea],
+    };
+
+    var date21Days = new Date();
+    var date14Days = new Date();
+    var dateCurrent = new Date();
+
+    date21Days.setDate(date21Days.getDate() - 21);
+    date14Days.setDate(date14Days.getDate() - 14);
+
+    // Check last week to this week
+    const repsPrevWeek = sets.reduce((acc, set) => {
+      if (set.date > date21Days && set.date < date14Days) {
+        acc[set.exercise.area] = acc[set.exercise.area]
+          ? (acc[set.exercise.area] += Number(set.amount))
+          : Number(set.amount);
+      }
+      return acc;
+    }, {});
+
+    const repsCurrWeek = sets.reduce((acc, set) => {
+      if (set.date > date14Days) {
+        acc[set.exercise.area] = acc[set.exercise.area]
+          ? (acc[set.exercise.area] += Number(set.amount))
+          : Number(set.amount);
+      }
+      return acc;
+    }, {});
+
+    var maxAreaDiff = 0;
+    var maxAreaName = "Next Week";
+
+    Object.keys(repsCurrWeek).map((a) => {
+      let percentDiff =
+        ((repsCurrWeek[a] - repsPrevWeek[a]) / repsPrevWeek[a]) * 100;
+
+      maxAreaName = percentDiff > maxAreaDiff ? a : maxAreaName;
+      maxAreaDiff = percentDiff > maxAreaDiff ? percentDiff : maxAreaDiff;
+    });
+
+    let topProgressArea = {
+      title: "Top Progress Wkly",
+      subtitle: maxAreaName,
+      data: `+${maxAreaDiff.toFixed()}%`,
+    };
+
+    // Best Workout
+    const repsByWorkout = sets.reduce((acc, set) => {
+      let workoutId = set.workout._id.toString();
+
+      acc[workoutId] = acc[workoutId]
+        ? (acc[workoutId] += Number(set.amount))
+        : Number(set.amount);
+
+      return acc;
+    }, {});
+
+    const maxWorkout = Object.keys(repsByWorkout).reduce((a, b) =>
+      repsByWorkout[a] > repsByWorkout[b] ? a : b
+    );
+
+    let bestWorkout = {
+      title: "Best Workout",
+      subtitle: "Repetitions",
+      data: repsByWorkout[maxWorkout],
+    };
+
+    let output = {
+      basic: [totalRepetitions, topAverage, completedSets, completedWorkouts],
+      area: [topArea, topProgressArea, bestWorkout, topExercise],
+    };
 
     res.status(200).json({ success: true, data: output });
   } catch (error) {
