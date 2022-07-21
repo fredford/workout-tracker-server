@@ -271,6 +271,77 @@ export const getDashboardData = async (req, res, next) => {
   }
 };
 
+export const getDashboardActivity = async (req, res, next) => {
+  const token = req.headers.authorization.split(" ")[1];
+
+  const { range } = req.query;
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    var currDate = new Date();
+
+    var startDate = new Date(
+      new Date().setDate(currDate.getDate() - dateRange[range])
+    );
+
+    // Get all user sets
+    const sets = await SetModel.find({
+      user: decoded.id,
+      date: {
+        $gt: startDate,
+        $lt: currDate,
+      },
+    })
+      .populate("workout")
+      .populate("exercise");
+
+    const repsByDate = sets.reduce((acc, set) => {
+      let date = set.workout.date.toISOString().split("T")[0];
+      acc[date] = acc[date]
+        ? (acc[date] += Number(set.amount))
+        : Number(set.amount);
+      return acc;
+    }, {});
+
+    var tempDate = new Date(Object.keys(repsByDate)[0]);
+    var output = {};
+
+    do {
+      let shortDate = tempDate.toISOString().split("T")[0];
+
+      output[shortDate] = repsByDate[shortDate] ? repsByDate[shortDate] : 0;
+      tempDate.setDate(tempDate.getDate() + 1);
+    } while (tempDate < currDate);
+
+    res.status(200).json({ success: true, data: output });
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+};
+
+const dateRange = {
+  week: 7,
+  month: 30,
+  year: 365,
+  alltime: 10000,
+};
+
+// const dateRange = {
+//   date: new Date(),
+//   week: function () {
+//     console.log(this.date);
+//     return this.date.getDay() - 7;
+//   },
+//   month: function () {
+//     return this.date.getMonth() - 1;
+//   },
+//   year: function () {
+//     return this.date.getFullYear() - 1;
+//   },
+// };
+
 const tempData = {
   stats: {
     Total: 100,
