@@ -56,3 +56,22 @@ export const updateUser = async (req, res, next) => {
     next(error);
   }
 };
+
+export const deleteUser = async (req, res, next) => {
+  const token = req.headers.authorization.split(" ")[1];
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    const user = await User.findById(decoded.id);
+
+    user.deleteOne();
+
+    res.status(200).json({
+      success: true,
+      data: "Success",
+    });
+  } catch (error) {
+    next(error);
+  }
+};

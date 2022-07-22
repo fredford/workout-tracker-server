@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import Set from "./Set.js";
 
 const ExerciseSchema = new mongoose.Schema({
   name: {
@@ -23,6 +24,15 @@ const ExerciseSchema = new mongoose.Schema({
     type: Boolean,
     required: [true, "Please provide if set by an Admin"],
   },
+});
+
+ExerciseSchema.pre("deleteOne", { document: true }, function (next) {
+  Set.deleteMany({ exercise: { _id: this._id } })
+    .then(function () {})
+    .catch(function (error) {
+      console.log(error);
+    });
+  next();
 });
 
 const Exercise = mongoose.model("Exercise", ExerciseSchema);

@@ -2,6 +2,9 @@ import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
+import Workout from "./Workout.js";
+import Set from "./Set.js";
+import Exercise from "./Exercise.js";
 
 const UserSchema = new mongoose.Schema({
   name: {
@@ -39,6 +42,28 @@ UserSchema.pre("save", async function (next) {
 
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
+  next();
+});
+
+UserSchema.pre("deleteOne", { document: true }, function (next) {
+  Set.deleteMany({ user: { _id: this._id } })
+    .then(function () {})
+    .catch(function (error) {
+      console.log(error);
+    });
+
+  Workout.deleteMany({ user: { _id: this._id } })
+    .then(function () {})
+    .catch(function (error) {
+      console.log(error);
+    });
+
+  Exercise.deleteMany({ user: { _id: this._id } })
+    .then(function () {})
+    .catch(function (error) {
+      console.log(error);
+    });
+
   next();
 });
 

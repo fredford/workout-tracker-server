@@ -321,6 +321,81 @@ export const getDashboardActivity = async (req, res, next) => {
   }
 };
 
+export const getTopExercises = async (req, res, next) => {
+  const token = req.headers.authorization.split(" ")[1];
+
+  const { area, range } = req.query;
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    var currDate = new Date();
+
+    var startDate = new Date(
+      new Date().setDate(currDate.getDate() - dateRange[range])
+    );
+
+    // Get all user sets
+    const sets = await SetModel.find({
+      user: decoded.id,
+      date: {
+        $gt: startDate,
+        $lt: currDate,
+      },
+    })
+      .populate("workout")
+      .populate("exercise");
+
+    let upperCaseArea = area.charAt(0).toUpperCase() + area.slice(1);
+
+    var checkArea =
+      area === "all" ? ["Upper", "Lower", "Core", "Cardio"] : [upperCaseArea];
+
+    var exerciseStats = sets.reduce((acc, set) => {
+      if (!checkArea.includes(set.exercise.area)) {
+        return acc;
+      }
+
+      let amount = Number(set.amount);
+
+      if (acc[set.exercise.name]) {
+        acc[set.exercise.name].setCount += 1;
+        acc[set.exercise.name].repCount =
+          acc[set.exercise.name].repCount + amount;
+        acc[set.exercise.name].avgReps = (
+          acc[set.exercise.name].repCount / acc[set.exercise.name].setCount
+        ).toFixed(1);
+
+        if (amount > acc[set.exercise.name].maxReps) {
+          acc[set.exercise.name].maxReps = amount;
+        }
+      } else {
+        acc[set.exercise.name] = {
+          setCount: 1,
+          repCount: amount,
+          avgReps: amount,
+          area: set.exercise.area,
+          maxReps: amount,
+          exerciseId: set.exercise._id.toString(),
+          name: set.exercise.name,
+        };
+      }
+      return acc;
+    }, {});
+
+    const output = Object.values(exerciseStats)
+      .sort((a, b) => b.repCount - a.repCount)
+      .slice(0, 5);
+
+    console.log(output);
+
+    res.status(200).json({ success: true, data: output });
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+};
+
 const dateRange = {
   week: 7,
   month: 30,

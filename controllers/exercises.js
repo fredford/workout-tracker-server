@@ -78,21 +78,17 @@ export const deleteExercise = async (req, res, next) => {
   const token = req.headers.authorization.split(" ")[1];
 
   const exerciseId = req.query.id;
-  const userId = req.query.user;
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const requestUser = await User.findById(decoded.id);
 
-    if (userId != requestUser) {
-      new Error("User ID does not match the auth token provided");
+    const exercise = await Exercise.findById(exerciseId).populate("user");
+
+    if (exercise.user._id.toString() === decoded.id) {
+      exercise.deleteOne();
     }
 
-    const response = await Exercise.deleteOne({
-      _id: exerciseId,
-      user: userId,
-    });
-    res.status(200).json({ success: true, data: response });
+    res.status(200).json({ success: true, data: "Success" });
   } catch (error) {
     console.error(`Unable to delete exercise: ${error}`);
     next(error);
