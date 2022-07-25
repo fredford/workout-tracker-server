@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import Workout from "../models/Workout.js";
 import User from "../models/User.js";
 import Set from "../models/Set.js";
+import ErrorResponse from "../utils/errorResponse.js";
 
 export const getWorkouts = async (req, res, next) => {
   const token = req.headers.authorization.split(" ")[1];
@@ -22,10 +23,7 @@ export const getWorkouts = async (req, res, next) => {
       });
 
       if (workout.length === 0) {
-        res
-          .status(404)
-          .json({ success: false, data: "Workout does not exist" });
-        next(error);
+        return next(new ErrorResponse("Workout not found", 404));
       }
       res.status(200).json({ success: true, data: workout });
     }
@@ -38,8 +36,7 @@ export const getWorkouts = async (req, res, next) => {
 
       // Check that a workout is returned
       if (workout.length === 0) {
-        res.stats(404).json({ success: false, data: "Workout does not exist" });
-        next(error);
+        return next(new ErrorResponse("No workouts found", 404));
       }
 
       // Get the list of sets for this workout

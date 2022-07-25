@@ -2,6 +2,8 @@ import jwt from "jsonwebtoken";
 
 import SetModel from "../models/Set.js";
 
+import ErrorResponse from "../utils/errorResponse.js";
+
 export const getExerciseData = async (req, res, next) => {
   const token = req.headers.authorization.split(" ")[1];
 
@@ -106,6 +108,10 @@ export const getDashboardData = async (req, res, next) => {
     })
       .populate("workout")
       .populate("exercise");
+
+    if (sets.length === 0) {
+      return next(new ErrorResponse("No sets found", 404));
+    }
 
     // Compute total sets
     let completedSets = {
@@ -296,6 +302,10 @@ export const getDashboardActivity = async (req, res, next) => {
       .populate("workout")
       .populate("exercise");
 
+    if (sets.length === 0) {
+      return next(new ErrorResponse("No sets found", 404));
+    }
+
     const repsByDate = sets.reduce((acc, set) => {
       let date = set.workout.date.toISOString().split("T")[0];
       acc[date] = acc[date]
@@ -387,8 +397,6 @@ export const getTopExercises = async (req, res, next) => {
       .sort((a, b) => b.repCount - a.repCount)
       .slice(0, 5);
 
-    console.log(output);
-
     res.status(200).json({ success: true, data: output });
   } catch (error) {
     console.log(error);
@@ -402,20 +410,6 @@ const dateRange = {
   year: 365,
   alltime: 10000,
 };
-
-// const dateRange = {
-//   date: new Date(),
-//   week: function () {
-//     console.log(this.date);
-//     return this.date.getDay() - 7;
-//   },
-//   month: function () {
-//     return this.date.getMonth() - 1;
-//   },
-//   year: function () {
-//     return this.date.getFullYear() - 1;
-//   },
-// };
 
 const tempData = {
   stats: {
