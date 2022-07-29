@@ -29,15 +29,15 @@ export const updateUser = async (req, res, next) => {
 
     const user = await User.findById(decoded.id);
 
-    if (updatedUser.name.length > 0) {
+    if (updatedUser.name && updatedUser.name.length > 0) {
       user.name = updatedUser.name;
     }
 
-    if (updatedUser.password.length > 0) {
+    if (updatedUser.password && updatedUser.password.length > 0) {
       user.password = updatedUser.password;
     }
 
-    if (updatedUser.theme.length > 0) {
+    if (updatedUser.theme && updatedUser.theme.length > 0) {
       user.theme = updatedUser.theme;
     }
 
