@@ -25,7 +25,7 @@ export const getWorkouts = async (req, res, next) => {
       if (workout.length === 0) {
         return next(new ErrorResponse("Workout not found", 404));
       }
-      res.status(200).json({ success: true, data: workout });
+      res.status(200).json({ success: true, data: workout[0] });
     }
     // Query Parameter for Last is passed, using getLast. Looking for the most recent workout
     else if (req.query.last) {

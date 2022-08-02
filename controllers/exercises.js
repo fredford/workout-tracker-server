@@ -2,6 +2,7 @@ import jwt from "jsonwebtoken";
 
 import Exercise from "../models/Exercise.js";
 import User from "../models/User.js";
+import ErrorResponse from "../utils/errorResponse.js";
 
 export const getExercises = async (req, res, next) => {
   const token = req.headers.authorization.split(" ")[1];
@@ -30,9 +31,11 @@ export const getExercises = async (req, res, next) => {
           user: process.env.ADMIN_ID,
           _id: req.query.id,
         }).sort({ name: 1 });
+      } else {
+        new ErrorResponse("No exercise found", 404);
       }
 
-      res.status(200).json({ success: true, data: exercise });
+      res.status(200).json({ success: true, data: exercise[0] });
     } else {
       const exercises = await Exercise.find({
         user: { $in: query },
