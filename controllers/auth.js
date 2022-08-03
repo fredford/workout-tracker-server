@@ -8,11 +8,16 @@ import sendEmail from "../utils/sendEmail.js";
 export const register = async (req, res, next) => {
   const { name, email, password } = req.body;
 
+  var location = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
+
+  console.log(location);
+
   try {
     const user = await User.create({
       name,
       email,
       password,
+      location,
     });
 
     sendToken(user, 201, res);

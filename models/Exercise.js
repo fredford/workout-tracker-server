@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import Set from "./Set.js";
 
+// Model Schema for Exercises
 const ExerciseSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -26,6 +27,7 @@ const ExerciseSchema = new mongoose.Schema({
   },
 });
 
+// Upon Exercise deletion remove all Sets associated to that Exercise
 ExerciseSchema.pre("deleteOne", { document: true }, function (next) {
   Set.deleteMany({ exercise: { _id: this._id } })
     .then(function () {})

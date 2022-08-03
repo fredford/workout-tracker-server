@@ -6,6 +6,7 @@ import Workout from "./Workout.js";
 import Set from "./Set.js";
 import Exercise from "./Exercise.js";
 
+// Model Schema for Users
 const UserSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -30,6 +31,10 @@ const UserSchema = new mongoose.Schema({
     type: String,
     default: "light",
     enum: ["light", "dark"],
+  },
+  location: {
+    type: String,
+    required: [true, "No location provided"],
   },
   resetPasswordToken: String,
   resetPasswordExpire: Date,
