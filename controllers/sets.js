@@ -12,7 +12,7 @@ export const addSet = async (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const userId = await User.findById(decoded.id);
+    const user = await User.findById(decoded.id);
 
     const exercise = await Exercise.findById(exerciseId);
     const workout = await Workout.findById(workoutId);
@@ -26,6 +26,7 @@ export const addSet = async (req, res, next) => {
       exercise,
       workout,
       amount,
+      user,
     });
 
     res.status(201).json({ success: true, data: set });
