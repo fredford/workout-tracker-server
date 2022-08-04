@@ -73,7 +73,7 @@ export const login = async (req, res, next) => {
 };
 
 /**
- * Handle a request for a new password by sending and email to
+ * Handle a request for sending a reset token and URL by email to
  * the provided email address.
  * @param {object} req Object for the HTTP request received
  * @param {object} res Object for the HTTP response to be sent
@@ -131,6 +131,12 @@ export const forgotpassword = async (req, res, next) => {
   }
 };
 
+/**
+ * Handle a request for updating a new password when given a reset token
+ * @param {object} req Object for the HTTP request received
+ * @param {object} res Object for the HTTP response to be sent
+ * @param {*} next Control passing
+ */
 export const resetpassword = async (req, res, next) => {
   // Process the reset token
   const resetPasswordToken = crypto
@@ -139,6 +145,7 @@ export const resetpassword = async (req, res, next) => {
     .digest("hex");
 
   try {
+    // Throw an error if no reset token is provided
     if (!resetPasswordToken) throw ["Missing reset token", 400];
 
     // Find the User matching the password valid reset token
@@ -164,7 +171,6 @@ export const resetpassword = async (req, res, next) => {
       data: "Password Reset Successful",
     });
   } catch (error) {
-    console.log(error);
     next(new ErrorResponse(...error));
   }
 };

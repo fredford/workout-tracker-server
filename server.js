@@ -9,21 +9,14 @@ import AdminJSMongoose from "@adminjs/mongoose";
 
 import dotenv from "dotenv";
 
-import bcrypt from "bcryptjs";
 import routes from "./routes/routes.js";
-import privateRoutes from "./routes/private.js";
-import userRoutes from "./routes/user.js";
-import exercisesRoutes from "./routes/exercises.js";
-import workoutsRoutes from "./routes/workouts.js";
-import workoutRoutes from "./routes/workout.js";
-import setRoutes from "./routes/sets.js";
-import statsRoutes from "./routes/stats.js";
 
 import errorHandler from "./middleware/error.js";
 import User from "./models/User.js";
-import router from "./routes/sets.js";
 
 dotenv.config({ path: "./.env" });
+
+const version = "/api/v1";
 
 const app = express();
 
@@ -71,16 +64,12 @@ const connectDB = async () => {
 // Connect to MongoDB
 connectDB();
 
+// Set CORS
 app.use(cors());
 app.use(express.json());
-app.use("/api/v1", routes);
-app.use("/api/v1/private", privateRoutes);
-app.use("/api/v1", userRoutes);
-app.use("/api/v1", exercisesRoutes);
-app.use("/api/v1", workoutsRoutes);
-app.use("/api/v1", workoutRoutes);
-app.use("/api/v1", setRoutes);
-app.use("/api/v1", statsRoutes);
+
+// Instantiate all set routes
+routes.forEach((route) => app.use(version, route));
 
 // Error Handler (last piece of middleware added)
 app.use(errorHandler);

@@ -1,17 +1,27 @@
-import express from "express";
-import {
-  forgotpassword,
-  login,
-  register,
-  resetpassword,
-} from "../controllers/auth.js";
+// Public routes
+import auth from "./userAuth.js";
 
-const router = express.Router();
+// Private routes
+import user from "./user.js";
+import exercises from "./exercises.js";
+import workouts from "./workouts.js";
+import workout from "./workout.js";
+import set from "./sets.js";
+import stats from "./stats.js";
 
-// Application startup routes
-router.route("/register").post(register);
-router.route("/login").post(login);
-router.route("/forgotpassword").post(forgotpassword);
-router.route("/resetpassword/:resetToken").put(resetpassword);
+const publicRoutes = [
+    auth
+];
 
-export default router;
+const privateRoutes = [
+    user,
+    exercises,
+    workouts, 
+    workout, 
+    set,
+    stats
+];
+
+const routes = [...publicRoutes, ...privateRoutes];
+
+export default routes;
