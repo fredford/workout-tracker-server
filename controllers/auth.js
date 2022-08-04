@@ -58,7 +58,7 @@ export const login = async (req, res, next) => {
     const user = await User.findOne({ email }).select("+password");
 
     // If a User does not exist respond with an error
-    if (!user) throw ["Invalid credentials", 401];
+    if (!user) throw ["Invalid credentials", 404];
 
     // Check if the User provided password matches the database
     const isMatch = await user.matchPasswords(password);
@@ -100,7 +100,7 @@ export const forgotpassword = async (req, res, next) => {
     await user.save();
 
     // Set the reset URL the User can go to
-    const resetUrl = `${process.env.HOST}/passwordreset/${resetToken}`;
+    const resetUrl = `${process.env.HOST}/resetpassword/${resetToken}`;
 
     // Message to be sent in the email
     const message = `
@@ -132,12 +132,16 @@ export const forgotpassword = async (req, res, next) => {
 };
 
 export const resetpassword = async (req, res, next) => {
+  // Process the reset token
   const resetPasswordToken = crypto
     .createHash("sha256")
     .update(req.params.resetToken)
     .digest("hex");
 
   try {
+    if (!resetPasswordToken) throw ["Missing reset token", 400];
+
+    // Find the User matching the password valid reset token
     const user = await User.findOne({
       resetPasswordToken,
       resetPasswordExpire: {
@@ -145,14 +149,14 @@ export const resetpassword = async (req, res, next) => {
       },
     });
 
-    if (!user) {
-      return next(new ErrorResponse("Invalid Reset Token", 400));
-    }
+    // Invalid reset token
+    if (!user) throw ["Invalid reset token provided", 401];
 
     user.password = req.body.password;
     user.resetPasswordToken = undefined;
     user.resetPasswordExpire = undefined;
 
+    // Update the user with the new password and removing reset token
     await user.save();
 
     res.status(201).json({
@@ -160,7 +164,8 @@ export const resetpassword = async (req, res, next) => {
       data: "Password Reset Successful",
     });
   } catch (error) {
-    next(error);
+    console.log(error);
+    next(new ErrorResponse(...error));
   }
 };
 
