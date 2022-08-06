@@ -2,9 +2,9 @@
 import crypto from "crypto";
 import errorHandler from "../middleware/error.js";
 // Models
-import User from "../models/User.js";
+import User from "../models/User.ts";
 // Utilities
-import ErrorResponse from "../utils/errorResponse.js";
+import ErrorResponse from "../utils/errorResponse.ts";
 import sendEmail from "../utils/sendEmail.js";
 
 /**

@@ -9,18 +9,9 @@ import workout from "./workout.js";
 import set from "./sets.js";
 import stats from "./stats.js";
 
-const publicRoutes = [
-    auth
-];
+const publicRoutes = [auth];
 
-const privateRoutes = [
-    user,
-    exercises,
-    workouts, 
-    workout, 
-    set,
-    stats
-];
+const privateRoutes = [user, exercises, workouts, workout, set, stats];
 
 const routes = [...publicRoutes, ...privateRoutes];
 

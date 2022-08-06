@@ -1,11 +1,17 @@
-import User from "../models/User.js";
+import User from "../models/User.ts";
 import jwt from "jsonwebtoken";
-import ErrorResponse from "../utils/errorResponse.js";
 
-export const user = async (req, res, next) => {
-  const token = req.headers.authorization.split(" ")[1];
+import { ErrorResponse } from "../utils/errorResponse"
+
+import {NextFunction, Request, Response} from "express"
+
+export const user = async (req: Request, res: Response, next: NextFunction) => {
+
 
   try {
+
+    const token = req?.headers?.authorization?.split(" ")[1] ?? ""
+
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
     const user = await User.findById(decoded.id);

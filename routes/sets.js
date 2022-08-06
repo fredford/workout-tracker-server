@@ -1,5 +1,5 @@
 import express from "express";
-import { addSet, deleteSet } from "../controllers/sets.js";
+import { addSet, deleteSet } from "../controllers/sets.ts";
 
 import { protect } from "../middleware/auth.js";
 

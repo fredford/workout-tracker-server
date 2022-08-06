@@ -12,7 +12,7 @@ import dotenv from "dotenv";
 import routes from "./routes/routes.js";
 
 import errorHandler from "./middleware/error.js";
-import User from "./models/User.js";
+import User from "./models/User.ts";
 
 dotenv.config({ path: "./.env" });
 

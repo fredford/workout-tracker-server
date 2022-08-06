@@ -1,4 +1,6 @@
-import mongoose from "mongoose";
+import mongoose, {Types} from "mongoose";
+
+
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
@@ -6,8 +8,20 @@ import Workout from "./Workout.js";
 import Set from "./Set.js";
 import Exercise from "./Exercise.js";
 
+export type UserDocument = mongoose.Document & {
+  _id: Types.ObjectId;
+  name: string;
+  email: string;
+  password: string;
+  theme: string;
+  location: string;
+  resetPasswordToken: string;
+  resetPasswordExpire: Date;
+}
+
+
 // Model Schema for Users
-const UserSchema = new mongoose.Schema({
+const UserSchema = new mongoose.Schema<UserDocument>({
   name: {
     type: String,
     required: [true, "Please provide a name"],
@@ -50,29 +64,37 @@ UserSchema.pre("save", async function (next) {
   next();
 });
 
-UserSchema.pre("deleteOne", { document: true }, function (next) {
+UserSchema.pre("deleteOne", { document: true }, function deleteOne(next) {
+
+  const user = this;
+
   Set.deleteMany({ user: { _id: this._id } })
-    .then(function () {})
-    .catch(function (error) {
+    .then(()=>{
+      console.log("Done")
+    })
+    .catch((error: Promise<void>)=> {
       console.log(error);
     });
 
   Workout.deleteMany({ user: { _id: this._id } })
-    .then(function () {})
-    .catch(function (error) {
+    .then(()=>{
+      console.log("Done")})
+    .catch((error: Promise<void>)=> {
       console.log(error);
     });
 
   Exercise.deleteMany({ user: { _id: this._id } })
-    .then(function () {})
-    .catch(function (error) {
+    .then(()=>{
+      console.log("Done")
+    })
+    .catch((error: Promise<void>)=> {
       console.log(error);
     });
 
   next();
 });
 
-UserSchema.methods.matchPasswords = async function (password) {
+UserSchema.methods.matchPasswords = async function (password: string) {
   return await bcrypt.compare(password, this.password);
 };
 

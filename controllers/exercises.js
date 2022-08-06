@@ -1,8 +1,8 @@
 import jwt from "jsonwebtoken";
 
 import Exercise from "../models/Exercise.js";
-import User from "../models/User.js";
-import ErrorResponse from "../utils/errorResponse.js";
+import User from "../models/User.ts";
+import ErrorResponse from "../utils/errorResponse.ts";
 
 export const getExercises = async (req, res, next) => {
   const token = req.headers.authorization.split(" ")[1];
