@@ -9,9 +9,9 @@ import sendEmail from "../utils/sendEmail.js";
 
 /**
  * Allows for a User to be registered with the server
- * @param {object} req Object for the HTTP request received
- * @param {object} res Object for the HTTP response to be sent
- * @param {*} next Control passing
+ * @param {Request} req Object for the HTTP request received
+ * @param {Response} res Object for the HTTP response to be sent
+ * @param {NextFunction} next Control passing
  */
 export const register = async (req, res, next) => {
   // Destructing request body

@@ -1,5 +1,5 @@
 import express from "express";
-import { user, updateUser, deleteUser } from "../controllers/user.ts";
+import { getUser, updateUser, deleteUser } from "../controllers/user.ts";
 
 import { protect } from "../middleware/auth.js";
 
@@ -7,7 +7,7 @@ const router = express.Router();
 
 router
   .route("/profile")
-  .get(protect, user)
+  .get(protect, getUser)
   .put(protect, updateUser)
   .delete(protect, deleteUser);
 

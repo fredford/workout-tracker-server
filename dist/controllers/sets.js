@@ -13,24 +13,25 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.deleteSet = exports.addSet = void 0;
-const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
-const Exercise_js_1 = __importDefault(require("../models/Exercise.js"));
+const Exercise_js_1 = __importDefault(require("../models/Exercise.ts"));
 const errorResponse_1 = require("../utils/errorResponse");
 const Set_js_1 = __importDefault(require("../models/Set.js"));
-const User_1 = __importDefault(require("../models/User"));
 const Workout_js_1 = __importDefault(require("../models/Workout.js"));
+const utils_1 = require("../utils/utils");
 const addSet = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
     try {
-        const token = (_a = req.headers.authorization.split(" ")) !== null && _a !== void 0 ? _a : {};
+        // Get the User Document from the request token
+        const user = yield (0, utils_1.getUserFromReq)(req);
+        // Get the request body information
         const { date, exerciseId, workoutId, amount } = req.body;
-        const decoded = jsonwebtoken_1.default.verify(token, process.env.JWT_SECRET);
-        const user = yield User_1.default.findById(decoded.id);
+        // Query for the provided Exercise and Workout
         const exercise = yield Exercise_js_1.default.findById(exerciseId);
         const workout = yield Workout_js_1.default.findById(workoutId);
+        /* Check if an Exercise or Workout were received */
         if (!exercise || !workout) {
             next(new errorResponse_1.ErrorResponse("Exercise or workout do not exist!", 404));
         }
+        /* Create the Set with Mongoose */
         const set = yield Set_js_1.default.create({
             date,
             exercise,
@@ -38,20 +39,19 @@ const addSet = (req, res, next) => __awaiter(void 0, void 0, void 0, function* (
             amount,
             user,
         });
+        /* Respond with the Set created and 201 status */
         res.status(201).json({ success: true, data: set });
     }
     catch (error) {
-        console.log(error);
         next(error);
     }
 });
 exports.addSet = addSet;
 const deleteSet = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    const token = req.headers.authorization.split(" ")[1];
     const { setId } = req.params;
     try {
-        const decoded = jsonwebtoken_1.default.verify(token, process.env.JWT_SECRET);
-        const userId = yield User_1.default.findById(decoded.id);
+        /* Get the User Document from the request token */
+        const user = yield (0, utils_1.getUserFromReq)(req);
         const set = yield Set_js_1.default.findById(setId);
         if (!set) {
             next(new errorResponse_1.ErrorResponse("Set does not exist!", 400));

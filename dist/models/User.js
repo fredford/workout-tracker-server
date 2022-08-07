@@ -18,7 +18,7 @@ const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const crypto_1 = __importDefault(require("crypto"));
 const Workout_js_1 = __importDefault(require("./Workout.js"));
 const Set_js_1 = __importDefault(require("./Set.js"));
-const Exercise_js_1 = __importDefault(require("./Exercise.js"));
+const Exercise_js_1 = __importDefault(require("./Exercise.ts"));
 // Model Schema for Users
 const UserSchema = new mongoose_1.default.Schema({
     name: {
@@ -62,7 +62,8 @@ UserSchema.pre("save", function (next) {
         next();
     });
 });
-UserSchema.pre("deleteOne", { document: true }, function (next) {
+UserSchema.pre("deleteOne", { document: true }, function deleteOne(next) {
+    const user = this;
     Set_js_1.default.deleteMany({ user: { _id: this._id } })
         .then(() => {
         console.log("Done");

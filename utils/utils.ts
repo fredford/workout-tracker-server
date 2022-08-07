@@ -24,5 +24,5 @@ export async function getUserFromReq (req: Request){
         throw new ErrorResponse("User not found", 404)
     }
 
-    return user
+    return user as any;
 }

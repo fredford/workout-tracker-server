@@ -1,8 +1,18 @@
-import mongoose from "mongoose";
+import mongoose, {Types} from "mongoose";
 import Set from "./Set.js";
 
+
+export type ExerciseDocument = mongoose.Document & {
+  _id: Types.ObjectId;
+  name: string;
+  area: string;
+  type: string;
+  user: Types.ObjectId;
+  isAdmin: boolean;
+}
+
 // Model Schema for Exercises
-const ExerciseSchema = new mongoose.Schema({
+const ExerciseSchema = new mongoose.Schema<ExerciseDocument>({
   name: {
     type: String,
     required: [true, "Please provide a name"],
@@ -30,8 +40,8 @@ const ExerciseSchema = new mongoose.Schema({
 // Upon Exercise deletion remove all Sets associated to that Exercise
 ExerciseSchema.pre("deleteOne", { document: true }, function (next) {
   Set.deleteMany({ exercise: { _id: this._id } })
-    .then(function () {})
-    .catch(function (error) {
+    .then()
+    .catch((error: Promise<void>) => {
       console.log(error);
     });
   next();

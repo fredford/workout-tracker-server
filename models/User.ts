@@ -6,7 +6,7 @@ import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import Workout from "./Workout.js";
 import Set from "./Set.js";
-import Exercise from "./Exercise.js";
+import Exercise from "./Exercise";
 
 export type UserDocument = mongoose.Document & {
   _id: Types.ObjectId;

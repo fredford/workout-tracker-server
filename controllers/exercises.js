@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 
-import Exercise from "../models/Exercise.js";
+import Exercise from "../models/Exercise.ts";
 import User from "../models/User.ts";
 import ErrorResponse from "../utils/errorResponse.ts";
 
