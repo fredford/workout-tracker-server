@@ -1,24 +1,25 @@
 import jwt from "jsonwebtoken";
 
 import Workout from "../models/Workout";
-import {User} from "../models/User";
+import {UserDocument} from "../models/User";
 import Set from "../models/Set";
 import {ErrorResponse} from "../utils/errorResponse"
+import {NextFunction, Request, Response} from "express";
 
-export const getWorkouts = async (req, res, next) => {
-  const token = req.headers.authorization.split(" ")[1];
+export const getWorkouts = async (req: Request, res: Response, next: NextFunction) => {
+
 
   const query = [];
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user: UserDocument = req.user
 
-    query.push(decoded.id);
+    query.push(user._id);
 
     // Query Parameter for ID is passed, using getById
     if (req.query.id) {
       const workout = await Workout.find({
-        user: decoded.id,
+        user: user._id,
         _id: req.query.id,
       });
 
@@ -30,7 +31,7 @@ export const getWorkouts = async (req, res, next) => {
     // Query Parameter for Last is passed, using getLast. Looking for the most recent workout
     else if (req.query.last) {
       // Query the database for the latest workout performed by the user
-      const workout = await Workout.find({user: decoded.id})
+      const workout = await Workout.find({user: user._id})
         .sort({date: -1})
         .limit(1);
 
@@ -57,7 +58,7 @@ export const getWorkouts = async (req, res, next) => {
       });
     } else {
       const workouts = await Workout.find({
-        user: decoded.id,
+        user: user._id,
       }).sort({date: -1});
 
       res.status(200).json({success: true, data: workouts});
@@ -68,22 +69,17 @@ export const getWorkouts = async (req, res, next) => {
   }
 };
 
-export const addWorkout = async (req, res, next) => {
-  const token = req.headers.authorization.split(" ")[1];
-  const {date, type, user} = req.body;
+export const addWorkout = async (req: Request, res: Response, next: NextFunction) => {
+
+  const {date, type} = req.body;
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const userId = await User.findById(decoded.id);
 
-    if (userId !== user) {
-      new Error("User ID does not match the auth token provided");
-    }
+    const user: UserDocument = req.user
 
     const workout = await Workout.create({
       date,
       type,
-      user,
     });
 
     res.status(201).json({success: true, data: workout});

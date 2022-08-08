@@ -1,14 +1,20 @@
 import jwt from "jsonwebtoken";
 
-import SetModel from "../models/Set";
+import SetModel, {SetDocument} from "../models/Set";
 
 import {ErrorResponse} from "../utils/errorResponse";
 import {NextFunction, Request, Response} from "express";
 import {UserDocument} from "../models/User";
+import User from "../routes/user";
+
+interface IOutput {
+  stats: { [key: string]: any },
+  cumulative: { [key: string]: any },
+  workoutProgression: { [key: string]: any },
+  setProgression: { [key: string]: any }
+}
 
 export const getExerciseData = async (req: Request, res: Response, next: NextFunction) => {
-
-
   const query = [];
 
   try {
@@ -30,41 +36,55 @@ export const getExerciseData = async (req: Request, res: Response, next: NextFun
       .populate("exercise");
 
     // Initialize the Output object
-    const output = {
+    const output: IOutput = {
       stats: {},
       cumulative: {},
       workoutProgression: {},
-      setProgression: {},
+      setProgression: {}
     };
 
-    // Compute the total number of Sets performed
+    // Compute the total number of Reps performed in the Sets
     const total = sets
       .map((set) => Number(set.amount))
       .reduce((prev, curr) => prev + curr);
 
+    /* Assign Stats object information
+    * Total - total number of repetitions performed
+    * Average - average number of repetitions performed
+    * Max - maximum number of repetitions performed */
     output.stats.Total = total;
     output.stats.Average = (
       Math.round((total / sets.length) * 100) / 100
     ).toFixed(2);
     output.stats.Max = Math.max(...sets.map((set) => Number(set.amount)));
 
-    const resultArr = [];
+    // Initialize date array
     const dateArr = [];
-
+    // Initialize cumulative sum of repetitions performed
     let cumulativeSum = 0;
+    // Initialize set counter
     let setCounter = 1;
 
+    // Iterate through each Set Document
     for (const set of sets) {
+
+      // Format the stored Date
       const date = new Date(set.date)
         .toISOString()
         .replace(/T/, " ")
         .split(" ")[0];
+
+      // Check for the index of the date if it already exists in the date array
       const index = dateArr.indexOf(date);
 
+      // Convert the Amount to a number
       const amount = Number(set.amount);
 
-      if (index == -1) {
+      // If the date does not exist in the date array, add it
+      if (index === -1) {
+        // Add date to the date array
         dateArr.push(date);
+        // Add the first set amount to the WorkoutProgression for the date
         output.workoutProgression[date] = amount;
 
         // Summing the cumulative total repetitions
@@ -95,24 +115,24 @@ export const getExerciseData = async (req: Request, res: Response, next: NextFun
 
     res.status(200).json({success: true, data: output});
   } catch (error) {
-    console.log(error);
+    console.log(`Stats-GetExerciseData error: ${error}`);
     next(error);
   }
 };
 
-export const getDashboardData = async (req, res, next) => {
-  const token = req.headers.authorization.split(" ")[1];
+export const getDashboardData = async (req: Request, res: Response, next: NextFunction) => {
 
   const query = [];
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    // Get the User Document from the Request
+    const user: UserDocument = req.user
 
-    query.push(decoded.id);
+    query.push(user._id);
 
     // Get all user sets
     const sets = await SetModel.find({
-      user: decoded.id,
+      user: user._id,
     })
       .populate("workout")
       .populate("exercise");
@@ -150,7 +170,7 @@ export const getDashboardData = async (req, res, next) => {
     };
 
     // Compute Top Exercise
-    const distinctExercises = sets.reduce((acc, set) => {
+    const distinctExercises = sets.reduce((acc: any, set: any) => {
       acc[set.exercise.name] = acc[set.exercise.name]
         ? (acc[set.exercise.name] += Number(set.amount))
         : Number(set.amount);
@@ -168,7 +188,7 @@ export const getDashboardData = async (req, res, next) => {
     };
 
     // Compute Highest Average
-    const distinctSets = sets.reduce((acc, set) => {
+    const distinctSets = sets.reduce((acc: any, set: any) => {
       acc[set.exercise.name] = acc[set.exercise.name]
         ? (acc[set.exercise.name] += 1)
         : 1;
@@ -192,7 +212,7 @@ export const getDashboardData = async (req, res, next) => {
     };
 
     // Exercise Data
-    const distinctAreas = sets.reduce((acc, set) => {
+    const distinctAreas = sets.reduce((acc: any, set: any) => {
       acc[set.exercise.area] = acc[set.exercise.area]
         ? (acc[set.exercise.area] += Number(set.amount))
         : Number(set.amount);
@@ -217,7 +237,7 @@ export const getDashboardData = async (req, res, next) => {
     date14Days.setDate(date14Days.getDate() - 14);
 
     // Check last week to this week
-    const repsPrevWeek = sets.reduce((acc, set) => {
+    const repsPrevWeek = sets.reduce((acc: any, set: any) => {
       if (set.date > date21Days && set.date < date14Days) {
         acc[set.exercise.area] = acc[set.exercise.area]
           ? (acc[set.exercise.area] += Number(set.amount))
@@ -226,7 +246,7 @@ export const getDashboardData = async (req, res, next) => {
       return acc;
     }, {});
 
-    const repsCurrWeek = sets.reduce((acc, set) => {
+    const repsCurrWeek = sets.reduce((acc: any, set: any) => {
       if (set.date > date14Days) {
         acc[set.exercise.area] = acc[set.exercise.area]
           ? (acc[set.exercise.area] += Number(set.amount))
@@ -253,7 +273,7 @@ export const getDashboardData = async (req, res, next) => {
     };
 
     // Best Workout
-    const repsByWorkout = sets.reduce((acc, set) => {
+    const repsByWorkout = sets.reduce((acc: any, set: any) => {
       const workoutId = set.workout._id.toString();
 
       acc[workoutId] = acc[workoutId]
@@ -285,23 +305,23 @@ export const getDashboardData = async (req, res, next) => {
   }
 };
 
-export const getDashboardActivity = async (req, res, next) => {
-  const token = req.headers.authorization.split(" ")[1];
+export const getDashboardActivity = async (req: Request, res: Response, next: NextFunction) => {
+
 
   const {range} = req.query;
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user: UserDocument = req.user
 
     const currDate = new Date();
 
     const startDate = new Date(
-      new Date().setDate(currDate.getDate() - dateRange[range])
+      new Date().setDate(currDate.getDate() - dateRange[range as keyof typeof dateRange])
     );
 
     // Get all user sets
     const sets = await SetModel.find({
-      user: decoded.id,
+      user: user._id,
       date: {
         $gt: startDate,
         $lt: currDate,
@@ -314,7 +334,7 @@ export const getDashboardActivity = async (req, res, next) => {
       return next(new ErrorResponse("No sets found", 404));
     }
 
-    const repsByDate = sets.reduce((acc, set) => {
+    const repsByDate = sets.reduce((acc: any, set: any) => {
       const date = set.workout.date.toISOString().split("T")[0];
       acc[date] = acc[date]
         ? (acc[date] += Number(set.amount))
@@ -323,7 +343,9 @@ export const getDashboardActivity = async (req, res, next) => {
     }, {});
 
     const tempDate = new Date(Object.keys(repsByDate)[0]);
-    const output = {};
+
+    // Output initialization
+    const output: { [k: string]: any } = {};
 
     do {
       const shortDate = tempDate.toISOString().split("T")[0];
@@ -339,23 +361,22 @@ export const getDashboardActivity = async (req, res, next) => {
   }
 };
 
-export const getTopExercises = async (req, res, next) => {
-  const token = req.headers.authorization.split(" ")[1];
-
-  const {area, range} = req.query;
-
+export const getTopExercises = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
+    // Request query for body area and date range
+    const {area, range} = req.query;
+    // Get User Document from Request
+    const user: UserDocument = req.user
+    // Get Current Date
     const currDate = new Date();
-
+    // Get the Start Date using the range specified in query
     const startDate = new Date(
-      new Date().setDate(currDate.getDate() - dateRange[range])
+      new Date().setDate(currDate.getDate() - dateRange[range as keyof typeof dateRange])
     );
 
     // Get all user sets
     const sets = await SetModel.find({
-      user: decoded.id,
+      user: user._id,
       date: {
         $gt: startDate,
         $lt: currDate,
@@ -364,12 +385,13 @@ export const getTopExercises = async (req, res, next) => {
       .populate("workout")
       .populate("exercise");
 
-    const upperCaseArea = area.charAt(0).toUpperCase() + area.slice(1);
+    const strArea = area as string
+    const upperCaseArea = strArea.charAt(0).toUpperCase() + strArea.slice(1);
 
     const checkArea =
-      area === "all" ? ["Upper", "Lower", "Core", "Cardio"] : [upperCaseArea];
+      strArea === "all" ? ["Upper", "Lower", "Core", "Cardio"] : [upperCaseArea];
 
-    const exerciseStats = sets.reduce((acc, set) => {
+    const exerciseStats = sets.reduce((acc: any, set: any) => {
       if (!checkArea.includes(set.exercise.area)) {
         return acc;
       }
@@ -402,7 +424,7 @@ export const getTopExercises = async (req, res, next) => {
     }, {});
 
     const output = Object.values(exerciseStats)
-      .sort((a, b) => b.repCount - a.repCount)
+      .sort((a: any, b: any) => b.repCount - a.repCount)
       .slice(0, 5);
 
     res.status(200).json({success: true, data: output});

@@ -74,12 +74,16 @@ app.use(errorHandler);
 const PORT = process.env.PORT || 8000;
 
 const index = app.listen(
-  app.listen(PORT, () => console.log(`Server running on port ${PORT}`)),
-  app.listen(8080, () => console.log("AdminJS is under localhost:8080/admin"))
+  app.listen(PORT, () => console.log(`Server running on port ${PORT}`))
 );
+
+const adminIndex = app.listen(
+  app.listen(8080, () => console.log("AdminJS is under localhost:8080/admin"))
+)
 
 process.on("unhandledRejection", (err, promise) => {
   console.log(`Logged Error: ${err}`);
+  adminIndex.close(() => process.exit(1))
   index.close(() => process.exit(1));
 });
 

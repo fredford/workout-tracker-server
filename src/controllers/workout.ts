@@ -1,49 +1,51 @@
 import jwt from "jsonwebtoken";
 
-import Set from "../models/Set.ts";
-import Workout from "../models/Workout.ts";
+import Set from "../models/Set";
+import Workout from "../models/Workout";
+import {NextFunction, Request, Response} from "express";
+import {UserDocument} from "../models/User";
 
-export const getWorkout = async (req, res, next) => {
-  const token = req.headers.authorization.split(" ")[1];
+export const getWorkout = async (req: Request, res: Response, next: NextFunction) => {
 
-  const { workoutId } = req.params;
 
-  let query = [];
+  const {workoutId} = req.params;
+
+  const query = [];
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user: UserDocument = req.user
 
-    query.push(decoded.id);
+    query.push(user._id);
 
     const sets = await Set.find({
-      user: { $in: query },
+      user: {$in: query},
       workout: workoutId,
     })
       .populate("workout")
       .populate("exercise");
 
-    res.status(200).json({ success: true, data: sets });
+    res.status(200).json({success: true, data: sets});
   } catch (error) {
     console.log(error);
     next(error);
   }
 };
 
-export const deleteWorkout = async (req, res, next) => {
-  const token = req.headers.authorization.split(" ")[1];
+export const deleteWorkout = async (req: Request, res: Response, next: NextFunction) => {
 
-  const { workoutId } = req.params;
+
+  const {workoutId} = req.params;
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user: UserDocument = req.user
 
     const workout = await Workout.findById(workoutId);
 
     workout.deleteOne();
 
-    let response = {};
+    const response = {};
 
-    res.status(200).json({ success: true, data: response });
+    res.status(200).json({success: true, data: response});
   } catch (error) {
     console.log(error);
     next(error);
