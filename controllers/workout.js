@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 
-import Set from "../models/Set.js";
-import Workout from "../models/Workout.js";
+import Set from "../models/Set.ts";
+import Workout from "../models/Workout.ts";
 
 export const getWorkout = async (req, res, next) => {
   const token = req.headers.authorization.split(" ")[1];

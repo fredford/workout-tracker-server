@@ -1,14 +1,14 @@
 import jwt from "jsonwebtoken";
 
-import Workout from "../models/Workout.js";
-import User from "../models/User.ts";
-import Set from "../models/Set.js";
-import ErrorResponse from "../utils/errorResponse.ts";
+import Workout from "../models/Workout";
+import {User} from "../models/User";
+import Set from "../models/Set";
+import {ErrorResponse} from "../utils/errorResponse"
 
 export const getWorkouts = async (req, res, next) => {
   const token = req.headers.authorization.split(" ")[1];
 
-  var query = [];
+  let query = [];
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
@@ -25,13 +25,13 @@ export const getWorkouts = async (req, res, next) => {
       if (workout.length === 0) {
         return next(new ErrorResponse("Workout not found", 404));
       }
-      res.status(200).json({ success: true, data: workout[0] });
+      res.status(200).json({success: true, data: workout[0]});
     }
     // Query Parameter for Last is passed, using getLast. Looking for the most recent workout
     else if (req.query.last) {
       // Query the database for the latest workout performed by the user
-      const workout = await Workout.find({ user: decoded.id })
-        .sort({ date: -1 })
+      const workout = await Workout.find({user: decoded.id})
+        .sort({date: -1})
         .limit(1);
 
       // Check that a workout is returned
@@ -40,7 +40,7 @@ export const getWorkouts = async (req, res, next) => {
       }
 
       // Get the list of sets for this workout
-      const sets = await Set.find({ workout: workout[0]._id });
+      const sets = await Set.find({workout: workout[0]._id});
       // Compute the number of sets performed
       let setsCount = sets.length;
       // Calculate the total number of repetitions performed
@@ -58,9 +58,9 @@ export const getWorkouts = async (req, res, next) => {
     } else {
       const workouts = await Workout.find({
         user: decoded.id,
-      }).sort({ date: -1 });
+      }).sort({date: -1});
 
-      res.status(200).json({ success: true, data: workouts });
+      res.status(200).json({success: true, data: workouts});
     }
   } catch (error) {
     console.log(error);
@@ -70,7 +70,7 @@ export const getWorkouts = async (req, res, next) => {
 
 export const addWorkout = async (req, res, next) => {
   const token = req.headers.authorization.split(" ")[1];
-  const { date, type, user } = req.body;
+  const {date, type, user} = req.body;
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
@@ -86,7 +86,7 @@ export const addWorkout = async (req, res, next) => {
       user,
     });
 
-    res.status(201).json({ success: true, data: workout });
+    res.status(201).json({success: true, data: workout});
   } catch (error) {
     console.log(error);
     next(error);

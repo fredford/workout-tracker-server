@@ -1,5 +1,5 @@
-import mongoose, {Types} from "mongoose";
-import Set from "./Set.js";
+import mongoose, { Types } from "mongoose";
+import Set from "./Set";
 
 
 export type ExerciseDocument = mongoose.Document & {
@@ -38,7 +38,7 @@ const ExerciseSchema = new mongoose.Schema<ExerciseDocument>({
 });
 
 // Upon Exercise deletion remove all Sets associated to that Exercise
-ExerciseSchema.pre("deleteOne", { document: true }, function (next) {
+ExerciseSchema.pre("deleteOne", function (this: ExerciseDocument, next) {
   Set.deleteMany({ exercise: { _id: this._id } })
     .then()
     .catch((error: Promise<void>) => {

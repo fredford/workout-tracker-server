@@ -4,8 +4,8 @@ import mongoose, {Types} from "mongoose";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
-import Workout from "./Workout.js";
-import Set from "./Set.js";
+import Workout from "./Workout";
+import Set from "./Set";
 import Exercise from "./Exercise";
 
 export type UserDocument = mongoose.Document & {
@@ -17,6 +17,10 @@ export type UserDocument = mongoose.Document & {
   location: string;
   resetPasswordToken: string;
   resetPasswordExpire: Date;
+
+  matchPasswords: (password: string) => boolean;
+  getSignedToken: () => string;
+  getResetPasswordToken: () => string;
 }
 
 
@@ -64,30 +68,31 @@ UserSchema.pre("save", async function (next) {
   next();
 });
 
-UserSchema.pre("deleteOne", { document: true }, function deleteOne(next) {
+UserSchema.pre("deleteOne", function deleteOne(this: UserDocument, next) {
 
   const user = this;
 
-  Set.deleteMany({ user: { _id: this._id } })
-    .then(()=>{
+  Set.deleteMany({user: {_id: this._id}})
+    .then(() => {
       console.log("Done")
     })
-    .catch((error: Promise<void>)=> {
+    .catch((error: Promise<void>) => {
       console.log(error);
     });
 
-  Workout.deleteMany({ user: { _id: this._id } })
-    .then(()=>{
-      console.log("Done")})
-    .catch((error: Promise<void>)=> {
+  Workout.deleteMany({user: {_id: this._id}})
+    .then(() => {
+      console.log("Done")
+    })
+    .catch((error: Promise<void>) => {
       console.log(error);
     });
 
-  Exercise.deleteMany({ user: { _id: this._id } })
-    .then(()=>{
+  Exercise.deleteMany({user: {_id: this._id}})
+    .then(() => {
       console.log("Done")
     })
-    .catch((error: Promise<void>)=> {
+    .catch((error: Promise<void>) => {
       console.log(error);
     });
 
@@ -99,7 +104,7 @@ UserSchema.methods.matchPasswords = async function (password: string) {
 };
 
 UserSchema.methods.getSignedToken = function () {
-  return jwt.sign({ id: this.id }, process.env.JWT_SECRET, {
+  return jwt.sign({id: this.id}, process.env.JWT_SECRET ?? "", {
     expiresIn: `${process.env.JWT_EXPIRE}`,
   });
 };
@@ -117,6 +122,5 @@ UserSchema.methods.getResetPasswordToken = function () {
   return resetToken;
 };
 
-const User = mongoose.model("User", UserSchema);
+export const User = mongoose.model<UserDocument>("User", UserSchema);
 
-export default User;

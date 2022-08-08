@@ -6,7 +6,7 @@ import {
   getTopExercises,
 } from "../controllers/stats.js";
 
-import { protect } from "../middleware/auth.js";
+import { protect } from "../middleware/auth";
 
 const router = express.Router();
 

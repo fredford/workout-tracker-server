@@ -1,6 +1,15 @@
-import mongoose from "mongoose";
+import mongoose, {Types} from "mongoose";
 
-const SetSchema = new mongoose.Schema({
+export type SetDocument = mongoose.Document & {
+  _id: Types.ObjectId;
+  date: Date;
+  workout: Types.ObjectId;
+  exercise: Types.ObjectId;
+  user: Types.ObjectId;
+  amount: string;
+}
+
+const SetSchema = new mongoose.Schema<SetDocument>({
   date: {
     type: Date,
     default: () => Date.now(),

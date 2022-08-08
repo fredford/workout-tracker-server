@@ -1,6 +1,12 @@
 import nodemailer from "nodemailer";
 
-const sendEmail = (options) => {
+interface IOptions {
+  to: string;
+  subject: string;
+  text: string;
+}
+
+const sendEmail = (options: IOptions) => {
   const transporter = nodemailer.createTransport({
     service: process.env.EMAIL_SERVICE,
     auth: {
@@ -16,7 +22,7 @@ const sendEmail = (options) => {
     html: options.text,
   };
 
-  transporter.sendMail(mailOptions, function (err, info) {
+  transporter.sendMail(mailOptions, (err, info) => {
     if (err) {
       console.log(err);
     } else {

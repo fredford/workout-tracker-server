@@ -12,13 +12,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.User = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const crypto_1 = __importDefault(require("crypto"));
-const Workout_js_1 = __importDefault(require("./Workout.js"));
-const Set_js_1 = __importDefault(require("./Set.js"));
-const Exercise_js_1 = __importDefault(require("./Exercise.ts"));
+const Workout_1 = __importDefault(require("./Workout"));
+const Set_1 = __importDefault(require("./Set"));
+const Exercise_1 = __importDefault(require("./Exercise"));
 // Model Schema for Users
 const UserSchema = new mongoose_1.default.Schema({
     name: {
@@ -62,23 +63,23 @@ UserSchema.pre("save", function (next) {
         next();
     });
 });
-UserSchema.pre("deleteOne", { document: true }, function deleteOne(next) {
+UserSchema.pre("deleteOne", function deleteOne(next) {
     const user = this;
-    Set_js_1.default.deleteMany({ user: { _id: this._id } })
+    Set_1.default.deleteMany({ user: { _id: this._id } })
         .then(() => {
         console.log("Done");
     })
         .catch((error) => {
         console.log(error);
     });
-    Workout_js_1.default.deleteMany({ user: { _id: this._id } })
+    Workout_1.default.deleteMany({ user: { _id: this._id } })
         .then(() => {
         console.log("Done");
     })
         .catch((error) => {
         console.log(error);
     });
-    Exercise_js_1.default.deleteMany({ user: { _id: this._id } })
+    Exercise_1.default.deleteMany({ user: { _id: this._id } })
         .then(() => {
         console.log("Done");
     })
@@ -93,7 +94,8 @@ UserSchema.methods.matchPasswords = function (password) {
     });
 };
 UserSchema.methods.getSignedToken = function () {
-    return jsonwebtoken_1.default.sign({ id: this.id }, process.env.JWT_SECRET, {
+    var _a;
+    return jsonwebtoken_1.default.sign({ id: this.id }, (_a = process.env.JWT_SECRET) !== null && _a !== void 0 ? _a : "", {
         expiresIn: `${process.env.JWT_EXPIRE}`,
     });
 };
@@ -106,5 +108,4 @@ UserSchema.methods.getResetPasswordToken = function () {
     this.resetPasswordExpire = Date.now() + 60 * (60 * 1000);
     return resetToken;
 };
-const User = mongoose_1.default.model("User", UserSchema);
-exports.default = User;
+exports.User = mongoose_1.default.model("User", UserSchema);

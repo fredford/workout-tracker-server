@@ -1,7 +1,7 @@
 import express from "express";
 import { addSet, deleteSet } from "../controllers/sets.ts";
 
-import { protect } from "../middleware/auth.js";
+import { protect } from "../middleware/auth";
 
 const router = express.Router();
 

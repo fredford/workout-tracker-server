@@ -2,9 +2,9 @@
 import {NextFunction, Request, Response} from "express";
 // Models
 import Exercise from "../models/Exercise";
-import Set from "../models/Set.js";
+import Set from "../models/Set";
 import {UserDocument} from "../models/User";
-import Workout from "../models/Workout.js";
+import Workout from "../models/Workout";
 // Utilities
 import { ErrorResponse } from "../utils/errorResponse"
 import {getUserFromReq} from "../utils/utils";
@@ -64,9 +64,8 @@ export const deleteSet = async (req: Request, res: Response, next: NextFunction)
       next(new ErrorResponse("Set does not exist!", 400));
     }
 
-    const response = await Set.deleteOne({
-      _id: set.id,
-    });
+    // Delete Set Document if it exists
+    const response = set?.deleteOne()
 
     res.status(200).json({ success: true, data: response });
   } catch (error) {

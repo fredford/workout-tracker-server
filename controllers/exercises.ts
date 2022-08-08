@@ -1,8 +1,8 @@
 import jwt from "jsonwebtoken";
 
-import Exercise from "../models/Exercise.ts";
-import User from "../models/User.ts";
-import ErrorResponse from "../utils/errorResponse.ts";
+import Exercise from "../models/Exercise";
+import {User} from "../models/User";
+import {ErrorResponse} from "../utils/errorResponse"
 
 export const getExercises = async (req, res, next) => {
   const token = req.headers.authorization.split(" ")[1];
@@ -24,23 +24,23 @@ export const getExercises = async (req, res, next) => {
       exercise = await Exercise.find({
         user: decoded.id,
         _id: req.query.id,
-      }).sort({ name: 1 });
+      }).sort({name: 1});
 
       if (exercise.length === 0) {
         exercise = await Exercise.find({
           user: process.env.ADMIN_ID,
           _id: req.query.id,
-        }).sort({ name: 1 });
+        }).sort({name: 1});
       } else {
         new ErrorResponse("No exercise found", 404);
       }
 
-      res.status(200).json({ success: true, data: exercise[0] });
+      res.status(200).json({success: true, data: exercise[0]});
     } else {
       const exercises = await Exercise.find({
-        user: { $in: query },
-      }).sort({ name: 1 });
-      res.status(200).json({ success: true, data: exercises });
+        user: {$in: query},
+      }).sort({name: 1});
+      res.status(200).json({success: true, data: exercises});
     }
   } catch (error) {
     console.log(error);
@@ -51,7 +51,7 @@ export const getExercises = async (req, res, next) => {
 export const addExercise = async (req, res, next) => {
   const token = req.headers.authorization.split(" ")[1];
 
-  const { name, area, type, user } = req.body;
+  const {name, area, type, user} = req.body;
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
@@ -70,7 +70,7 @@ export const addExercise = async (req, res, next) => {
       isAdmin: user === process.env.ADMIN_ID ? true : false,
     });
 
-    res.status(201).json({ success: true, data: exercise });
+    res.status(201).json({success: true, data: exercise});
   } catch (error) {
     console.log(error);
     next(error);
@@ -91,7 +91,7 @@ export const deleteExercise = async (req, res, next) => {
       exercise.deleteOne();
     }
 
-    res.status(200).json({ success: true, data: "Success" });
+    res.status(200).json({success: true, data: "Success"});
   } catch (error) {
     console.error(`Unable to delete exercise: ${error}`);
     next(error);

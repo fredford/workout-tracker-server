@@ -9,12 +9,12 @@ import AdminJSMongoose from "@adminjs/mongoose";
 
 import dotenv from "dotenv";
 
-import routes from "./routes/routes.js";
+import routes from "./routes/routes";
 
-import errorHandler from "./middleware/error.js";
-import User from "./models/User.ts";
+import errorHandler from "./middleware/error";
+import {User} from "./models/User";
 
-dotenv.config({ path: "./.env" });
+dotenv.config({path: "./.env"});
 
 const version = "/api/v1";
 
@@ -30,13 +30,13 @@ const connectDB = async () => {
     useUnifiedTopology: true,
   });
 
-  const adminJs = new AdminJS({ databases: [mongooseDb], rootPath: "/admin" });
+  const adminJs = new AdminJS({databases: [mongooseDb], rootPath: "/admin"});
   const adminJSrouter = AdminJSExpress.buildAuthenticatedRouter(
     adminJs,
     {
       authenticate: async (email, password) => {
         if (email === "admin@admin.com") {
-          const user = await User.findOne({ email: "admin@admin.com" }).select(
+          const user = await User.findOne({email: "admin@admin.com"}).select(
             "+password"
           );
 
@@ -76,14 +76,14 @@ app.use(errorHandler);
 
 const PORT = process.env.PORT || 8000;
 
-const server = app.listen(
+const index = app.listen(
   app.listen(PORT, () => console.log(`Server running on port ${PORT}`)),
   app.listen(8080, () => console.log("AdminJS is under localhost:8080/admin"))
 );
 
 process.on("unhandledRejection", (err, promise) => {
   console.log(`Logged Error: ${err}`);
-  server.close(() => process.exit(1));
+  index.close(() => process.exit(1));
 });
 
 export default app;

@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 
-import SetModel from "../models/Set.js";
+import SetModel from "../models/Set.ts";
 
 import ErrorResponse from "../utils/errorResponse.ts";
 

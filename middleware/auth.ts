@@ -1,8 +1,13 @@
-import jwt from "jsonwebtoken";
-import User from "../models/User.ts";
-import ErrorResponse from "../utils/errorResponse.ts";
+import jwt, {JwtPayload} from "jsonwebtoken";
+import {User, UserDocument} from "../models/User";
+import {ErrorResponse} from "../utils/errorResponse"
+import {NextFunction, Response} from "express";
+import {getUserFromReq} from "../utils/utils";
 
-export const protect = async (req, res, next) => {
+import {Request} from "../types";
+
+
+export const protect = async (req: Request, res: Response, next: NextFunction) => {
   let token;
 
   // Bearer is added to know that it is an authentication token
@@ -24,15 +29,7 @@ export const protect = async (req, res, next) => {
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-    const user = await User.findById(decoded.id);
-
-    if (!user) {
-      return next(new ErrorResponse("No user found with this id", 404));
-    }
-
-    req.user = user;
+    req.user = await getUserFromReq(req)
 
     next();
   } catch (error) {

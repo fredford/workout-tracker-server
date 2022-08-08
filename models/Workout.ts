@@ -1,5 +1,12 @@
-import mongoose from "mongoose";
-import Set from "./Set.js";
+import mongoose, { Types } from "mongoose";
+import Set from "./Set";
+
+export type WorkoutDocument = mongoose.Document & {
+  _id: Types.ObjectId;
+  date: Date;
+  type: string;
+  user: Types.ObjectId;
+}
 
 const WorkoutSchema = new mongoose.Schema({
   date: {
@@ -17,10 +24,14 @@ const WorkoutSchema = new mongoose.Schema({
   },
 });
 
-WorkoutSchema.pre("deleteOne", { document: true }, function (next) {
+/**
+ * Middleware executed when deleteOne operation is called to clean up Sets
+ */
+WorkoutSchema.pre("deleteOne", function (this: WorkoutDocument, next) {
+
   Set.deleteMany({ workout: { _id: this._id } })
-    .then(function () {})
-    .catch(function (error) {
+    .then()
+    .catch( (error: Promise<void>) => {
       console.log(error);
     });
 

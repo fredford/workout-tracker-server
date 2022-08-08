@@ -1,7 +1,8 @@
-import ErrorResponse from "../utils/errorResponse.ts";
+import {ErrorResponse} from "../utils/errorResponse";
+import {NextFunction, Request, Response} from "express";
 
-const errorHandler = (err, req, res, next) => {
-  let error = { ...err };
+const errorHandler = (err: any, req: Request, res: Response, next: NextFunction) => {
+  let error = {...err};
 
   error.message = err.message;
 
@@ -12,7 +13,7 @@ const errorHandler = (err, req, res, next) => {
   }
 
   if (err.name === "ValidationError") {
-    const message = Object.values(err.errors).map((val) => val.message);
+    const message = Object.values(err.errors).map((val: any) => val.message)[0];
     error = new ErrorResponse(message, 400);
   }
 
