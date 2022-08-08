@@ -1,7 +1,7 @@
 import express from "express";
-import { addWorkout, getWorkouts } from "../controllers/workouts.js";
+import {addWorkout, getWorkouts} from "../controllers/workouts";
 
-import { protect } from "../middleware/auth";
+import {protect} from "../middleware/auth";
 
 const router = express.Router();
 

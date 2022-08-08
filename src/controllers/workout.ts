@@ -8,7 +8,7 @@ export const getWorkout = async (req, res, next) => {
 
   const { workoutId } = req.params;
 
-  var query = [];
+  let query = [];
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
@@ -41,7 +41,7 @@ export const deleteWorkout = async (req, res, next) => {
 
     workout.deleteOne();
 
-    var response = {};
+    let response = {};
 
     res.status(200).json({ success: true, data: response });
   } catch (error) {

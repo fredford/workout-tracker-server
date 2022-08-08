@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "description": "",
   "main": "dist/index.js",
-  "type": "module",
   "scripts": {
     "prebuild": "tslint -c tslint.json -p tsconfig.json --fix",
     "build": "tsc",
@@ -28,6 +27,7 @@
     "adminjs": "^5.11.0",
     "bcrypt": "^5.0.1",
     "bcryptjs": "^2.4.3",
+    "common-js": "^0.3.8",
     "cors": "^2.8.5",
     "dotenv": "^16.0.0",
     "express": "^4.17.2",

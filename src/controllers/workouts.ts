@@ -8,7 +8,7 @@ import {ErrorResponse} from "../utils/errorResponse"
 export const getWorkouts = async (req, res, next) => {
   const token = req.headers.authorization.split(" ")[1];
 
-  let query = [];
+  const query = [];
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
@@ -42,9 +42,9 @@ export const getWorkouts = async (req, res, next) => {
       // Get the list of sets for this workout
       const sets = await Set.find({workout: workout[0]._id});
       // Compute the number of sets performed
-      let setsCount = sets.length;
+      const setsCount = sets.length;
       // Calculate the total number of repetitions performed
-      let totalReps = sets.reduce((sum, curr) => sum + Number(curr.amount), 0);
+      const totalReps = sets.reduce((sum, curr) => sum + Number(curr.amount), 0);
       // Return the data object
       res.status(200).json({
         success: true,

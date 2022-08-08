@@ -1,10 +1,8 @@
 import jwt, {JwtPayload} from "jsonwebtoken";
 import {User, UserDocument} from "../models/User";
 import {ErrorResponse} from "../utils/errorResponse"
-import {NextFunction, Response} from "express";
+import {Request, NextFunction, Response} from "express";
 import {getUserFromReq} from "../utils/utils";
-
-import {Request} from "../types";
 
 
 export const protect = async (req: Request, res: Response, next: NextFunction) => {

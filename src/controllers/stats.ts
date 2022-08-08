@@ -1,38 +1,46 @@
 import jwt from "jsonwebtoken";
 
-import SetModel from "../models/Set.ts";
+import SetModel from "../models/Set";
 
-import ErrorResponse from "../utils/errorResponse.ts";
+import {ErrorResponse} from "../utils/errorResponse";
+import {NextFunction, Request, Response} from "express";
+import {UserDocument} from "../models/User";
 
-export const getExerciseData = async (req, res, next) => {
-  const token = req.headers.authorization.split(" ")[1];
+export const getExerciseData = async (req: Request, res: Response, next: NextFunction) => {
 
-  const { exerciseId } = req.params;
 
-  var query = [];
+  const query = [];
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    // Get the User Document from the Request
+    const user: UserDocument = req.user
 
-    query.push(decoded.id);
+    // Get the ExerciseId from request parameters
+    const {exerciseId} = req.params;
 
+    // Add User id to the query
+    query.push(user._id);
+
+    // Query for Set Documents with the ExerciseId provided by the User
     const sets = await SetModel.find({
-      user: { $in: query },
+      user: {$in: query},
       exercise: exerciseId,
     })
       .populate("workout")
       .populate("exercise");
 
-    var output = {
+    // Initialize the Output object
+    const output = {
       stats: {},
       cumulative: {},
       workoutProgression: {},
       setProgression: {},
     };
 
-    var total = sets
+    // Compute the total number of Sets performed
+    const total = sets
       .map((set) => Number(set.amount))
-      .reduce((prev, next) => prev + next);
+      .reduce((prev, curr) => prev + curr);
 
     output.stats.Total = total;
     output.stats.Average = (
@@ -40,20 +48,20 @@ export const getExerciseData = async (req, res, next) => {
     ).toFixed(2);
     output.stats.Max = Math.max(...sets.map((set) => Number(set.amount)));
 
-    var resultArr = [];
-    var dateArr = [];
+    const resultArr = [];
+    const dateArr = [];
 
-    var cumulativeSum = 0;
-    var setCounter = 1;
+    let cumulativeSum = 0;
+    let setCounter = 1;
 
     for (const set of sets) {
-      var date = new Date(set.date)
+      const date = new Date(set.date)
         .toISOString()
         .replace(/T/, " ")
         .split(" ")[0];
-      var index = dateArr.indexOf(date);
+      const index = dateArr.indexOf(date);
 
-      var amount = Number(set.amount);
+      const amount = Number(set.amount);
 
       if (index == -1) {
         dateArr.push(date);
@@ -85,7 +93,7 @@ export const getExerciseData = async (req, res, next) => {
       output.setProgression[`${date} Set ${setCounter}`] = amount;
     }
 
-    res.status(200).json({ success: true, data: output });
+    res.status(200).json({success: true, data: output});
   } catch (error) {
     console.log(error);
     next(error);
@@ -95,7 +103,7 @@ export const getExerciseData = async (req, res, next) => {
 export const getDashboardData = async (req, res, next) => {
   const token = req.headers.authorization.split(" ")[1];
 
-  var query = [];
+  const query = [];
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
@@ -114,7 +122,7 @@ export const getDashboardData = async (req, res, next) => {
     }
 
     // Compute total sets
-    let completedSets = {
+    const completedSets = {
       title: "Sets",
       subtitle: "Completed",
       data: sets.length,
@@ -124,7 +132,7 @@ export const getDashboardData = async (req, res, next) => {
 
     const totalReps = sets.reduce((acc, set) => acc + Number(set.amount), 0);
 
-    let totalRepetitions = {
+    const totalRepetitions = {
       title: "Total",
       subtitle: "Repetitions",
       data: totalReps,
@@ -135,7 +143,7 @@ export const getDashboardData = async (req, res, next) => {
       ...new Set(sets.map((set) => set.workout._id.toString())),
     ];
 
-    let completedWorkouts = {
+    const completedWorkouts = {
       title: "Workouts",
       subtitle: "Completed",
       data: uniqueWorkouts.length,
@@ -153,7 +161,7 @@ export const getDashboardData = async (req, res, next) => {
       distinctExercises[a] > distinctExercises[b] ? a : b
     );
 
-    let topExercise = {
+    const topExercise = {
       title: "Top Exercise",
       subtitle: maxExercise,
       data: distinctExercises[maxExercise],
@@ -167,17 +175,17 @@ export const getDashboardData = async (req, res, next) => {
       return acc;
     }, {});
 
-    var currMax = 0.0;
-    var currName = "";
+    let currMax = 0.0;
+    let currName = "";
 
     const maxAverage = Object.keys(distinctExercises).map((a) => {
-      let average = distinctExercises[a] / distinctSets[a];
+      const average = distinctExercises[a] / distinctSets[a];
 
       currName = average > currMax ? a : currName;
       currMax = average > currMax ? average : currMax;
     });
 
-    let topAverage = {
+    const topAverage = {
       title: "Top Average",
       subtitle: currName,
       data: currMax.toFixed(1),
@@ -195,15 +203,15 @@ export const getDashboardData = async (req, res, next) => {
       distinctAreas[a] > distinctAreas[b] ? a : b
     );
 
-    let topArea = {
+    const topArea = {
       title: "Top Area",
       subtitle: maxArea,
       data: distinctAreas[maxArea],
     };
 
-    var date21Days = new Date();
-    var date14Days = new Date();
-    var dateCurrent = new Date();
+    const date21Days = new Date();
+    const date14Days = new Date();
+    const dateCurrent = new Date();
 
     date21Days.setDate(date21Days.getDate() - 21);
     date14Days.setDate(date14Days.getDate() - 14);
@@ -227,18 +235,18 @@ export const getDashboardData = async (req, res, next) => {
       return acc;
     }, {});
 
-    var maxAreaDiff = 0;
-    var maxAreaName = "Next Week";
+    let maxAreaDiff = 0;
+    let maxAreaName = "Next Week";
 
     Object.keys(repsCurrWeek).map((a) => {
-      let percentDiff =
+      const percentDiff =
         ((repsCurrWeek[a] - repsPrevWeek[a]) / repsPrevWeek[a]) * 100;
 
       maxAreaName = percentDiff > maxAreaDiff ? a : maxAreaName;
       maxAreaDiff = percentDiff > maxAreaDiff ? percentDiff : maxAreaDiff;
     });
 
-    let topProgressArea = {
+    const topProgressArea = {
       title: "Top Progress Wkly",
       subtitle: maxAreaName,
       data: `+${maxAreaDiff.toFixed()}%`,
@@ -246,7 +254,7 @@ export const getDashboardData = async (req, res, next) => {
 
     // Best Workout
     const repsByWorkout = sets.reduce((acc, set) => {
-      let workoutId = set.workout._id.toString();
+      const workoutId = set.workout._id.toString();
 
       acc[workoutId] = acc[workoutId]
         ? (acc[workoutId] += Number(set.amount))
@@ -259,18 +267,18 @@ export const getDashboardData = async (req, res, next) => {
       repsByWorkout[a] > repsByWorkout[b] ? a : b
     );
 
-    let bestWorkout = {
+    const bestWorkout = {
       title: "Best Workout",
       subtitle: "Repetitions",
       data: repsByWorkout[maxWorkout],
     };
 
-    let output = {
+    const output = {
       basic: [totalRepetitions, topAverage, completedSets, completedWorkouts],
       area: [topArea, topProgressArea, bestWorkout, topExercise],
     };
 
-    res.status(200).json({ success: true, data: output });
+    res.status(200).json({success: true, data: output});
   } catch (error) {
     console.log(error);
     next(error);
@@ -280,14 +288,14 @@ export const getDashboardData = async (req, res, next) => {
 export const getDashboardActivity = async (req, res, next) => {
   const token = req.headers.authorization.split(" ")[1];
 
-  const { range } = req.query;
+  const {range} = req.query;
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    var currDate = new Date();
+    const currDate = new Date();
 
-    var startDate = new Date(
+    const startDate = new Date(
       new Date().setDate(currDate.getDate() - dateRange[range])
     );
 
@@ -307,24 +315,24 @@ export const getDashboardActivity = async (req, res, next) => {
     }
 
     const repsByDate = sets.reduce((acc, set) => {
-      let date = set.workout.date.toISOString().split("T")[0];
+      const date = set.workout.date.toISOString().split("T")[0];
       acc[date] = acc[date]
         ? (acc[date] += Number(set.amount))
         : Number(set.amount);
       return acc;
     }, {});
 
-    var tempDate = new Date(Object.keys(repsByDate)[0]);
-    var output = {};
+    const tempDate = new Date(Object.keys(repsByDate)[0]);
+    const output = {};
 
     do {
-      let shortDate = tempDate.toISOString().split("T")[0];
+      const shortDate = tempDate.toISOString().split("T")[0];
 
       output[shortDate] = repsByDate[shortDate] ? repsByDate[shortDate] : 0;
       tempDate.setDate(tempDate.getDate() + 1);
     } while (tempDate < currDate);
 
-    res.status(200).json({ success: true, data: output });
+    res.status(200).json({success: true, data: output});
   } catch (error) {
     console.log(error);
     next(error);
@@ -334,14 +342,14 @@ export const getDashboardActivity = async (req, res, next) => {
 export const getTopExercises = async (req, res, next) => {
   const token = req.headers.authorization.split(" ")[1];
 
-  const { area, range } = req.query;
+  const {area, range} = req.query;
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    var currDate = new Date();
+    const currDate = new Date();
 
-    var startDate = new Date(
+    const startDate = new Date(
       new Date().setDate(currDate.getDate() - dateRange[range])
     );
 
@@ -356,17 +364,17 @@ export const getTopExercises = async (req, res, next) => {
       .populate("workout")
       .populate("exercise");
 
-    let upperCaseArea = area.charAt(0).toUpperCase() + area.slice(1);
+    const upperCaseArea = area.charAt(0).toUpperCase() + area.slice(1);
 
-    var checkArea =
+    const checkArea =
       area === "all" ? ["Upper", "Lower", "Core", "Cardio"] : [upperCaseArea];
 
-    var exerciseStats = sets.reduce((acc, set) => {
+    const exerciseStats = sets.reduce((acc, set) => {
       if (!checkArea.includes(set.exercise.area)) {
         return acc;
       }
 
-      let amount = Number(set.amount);
+      const amount = Number(set.amount);
 
       if (acc[set.exercise.name]) {
         acc[set.exercise.name].setCount += 1;
@@ -397,7 +405,7 @@ export const getTopExercises = async (req, res, next) => {
       .sort((a, b) => b.repCount - a.repCount)
       .slice(0, 5);
 
-    res.status(200).json({ success: true, data: output });
+    res.status(200).json({success: true, data: output});
   } catch (error) {
     console.log(error);
     next(error);

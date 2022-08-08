@@ -12,7 +12,7 @@ import dotenv from "dotenv";
 import routes from "./routes/routes";
 
 import errorHandler from "./middleware/error";
-import {User} from "./models/User";
+import {User, UserDocument} from "./models/User";
 
 dotenv.config({path: "./.env"});
 
@@ -25,10 +25,7 @@ AdminJS.registerAdapter(AdminJSMongoose);
 
 // Run AdminJS with Mongoose
 const connectDB = async () => {
-  const mongooseDb = await mongoose.connect(process.env.WORKOUTTRACKER_DB_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  });
+  const mongooseDb = await mongoose.connect(process.env.WORKOUTTRACKER_DB_URI ?? "");
 
   const adminJs = new AdminJS({databases: [mongooseDb], rootPath: "/admin"});
   const adminJSrouter = AdminJSExpress.buildAuthenticatedRouter(
@@ -38,7 +35,7 @@ const connectDB = async () => {
         if (email === "admin@admin.com") {
           const user = await User.findOne({email: "admin@admin.com"}).select(
             "+password"
-          );
+          ) as any;
 
           const isMatch = await user.matchPasswords(password);
 

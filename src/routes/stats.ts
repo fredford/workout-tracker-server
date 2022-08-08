@@ -4,9 +4,9 @@ import {
   getDashboardData,
   getDashboardActivity,
   getTopExercises,
-} from "../controllers/stats.js";
+} from "../controllers/stats";
 
-import { protect } from "../middleware/auth";
+import {protect} from "../middleware/auth";
 
 const router = express.Router();
 
