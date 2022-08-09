@@ -1,4 +1,4 @@
-import mongoose, { Types } from "mongoose";
+import mongoose, {Types} from "mongoose";
 import Set from "./Set";
 
 
@@ -39,7 +39,7 @@ const ExerciseSchema = new mongoose.Schema<ExerciseDocument>({
 
 // Upon Exercise deletion remove all Sets associated to that Exercise
 ExerciseSchema.pre("deleteOne", function (this: ExerciseDocument, next) {
-  Set.deleteMany({ exercise: { _id: this._id } })
+  Set.deleteMany({exercise: {_id: this._id}})
     .then()
     .catch((error: Promise<void>) => {
       console.log(error);
@@ -47,6 +47,6 @@ ExerciseSchema.pre("deleteOne", function (this: ExerciseDocument, next) {
   next();
 });
 
-const Exercise = mongoose.model("Exercise", ExerciseSchema);
+const Exercise = mongoose.model<ExerciseDocument>("Exercise", ExerciseSchema);
 
 export default Exercise;

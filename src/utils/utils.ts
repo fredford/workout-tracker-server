@@ -2,7 +2,7 @@ import jwt, {JwtPayload} from "jsonwebtoken";
 
 import {Request} from "express";
 import {ErrorResponse} from "./errorResponse";
-import {User} from "../models/User";
+import {User, UserDocument} from "../models/User";
 
 export async function getUserFromReq(req: Request) {
 
@@ -15,14 +15,15 @@ export async function getUserFromReq(req: Request) {
   }
 
   // Use JSON web token to verify that the token is valid
-  const {_id} = jwt.verify(token, process.env.JWT_SECRET ?? "") as JwtPayload
+  const decoded = jwt.verify(token, process.env.JWT_SECRET ?? "") as JwtPayload
 
-  const user = await User.findById(_id)
+  // Find the User
+  const user = await User.findById(decoded.id)
 
   // Check if the received User exists
-  if (user) {
+  if (!user) {
     throw new ErrorResponse("User not found", 404)
   }
 
-  return user as any;
+  return user as UserDocument;
 }

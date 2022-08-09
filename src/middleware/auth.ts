@@ -28,7 +28,6 @@ export const protect = async (req: Request, res: Response, next: NextFunction) =
 
   try {
     req.user = await getUserFromReq(req)
-
     next();
   } catch (error) {
     return next(

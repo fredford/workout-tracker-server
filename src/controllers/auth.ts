@@ -36,6 +36,8 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
     if (error?.code === 11000)
       next(new ErrorResponse("User already exists!", 409));
 
+    // If an unknown error occurs
+    if (error?.status) console.log(`Register error: ${error}`)
     // All other errors
     next(error);
   }
@@ -53,22 +55,24 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
 
   try {
     // Check that request body is valid
-    if (!email || !password)
-      throw ["Please provide an email and password", 400];
+    if (!email || !password) throw new ErrorResponse("Please provide an email and password", 400)
+
     // Query the database for a User with the given email
     const user = await User.findOne({email}).select("+password");
 
     // If a User does not exist respond with an error
-    if (!user) throw ["Invalid credentials", 404];
+    if (!user) throw new ErrorResponse("Invalid user credentials", 404)
 
     // Check if the User provided password matches the database
-    const isMatch = user.matchPasswords(password);
+    const isMatch = await user.matchPasswords(password);
 
     // If the passwords do not match return
-    if (!isMatch) throw ["Invalid credentials", 401];
+    if (!isMatch) throw new ErrorResponse("Invalid password credentials", 401)
 
     sendToken(user, 200, res);
-  } catch (error) {
+  } catch (error: any) {
+    // If an unknown error occurs
+    if (error?.status) console.log(`Login error: ${error}`)
     next(error);
   }
 };
@@ -82,17 +86,17 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
  */
 export const forgotpassword = async (req: Request, res: Response, next: NextFunction) => {
   // Destructuring request body
-  const {email} = req.body;
+  const {email} = req.body
 
   try {
     // Check that the request body is valid
-    if (!email) throw ["Please provide an email", 400];
+    if (!email) throw new ErrorResponse("Please provide an email", 400)
 
     // Query the database for a User with the given email
-    const user = await User.findOne({email});
+    const user = await User.findOne({email})
 
     // If a User does not exist respond with an error
-    if (!user) throw ["Email could not be sent", 404];
+    if (!user) throw new ErrorResponse("Email could not be sent", 404)
 
     // Generate a reset password token
     const resetToken = user.getResetPasswordToken();
@@ -125,9 +129,11 @@ export const forgotpassword = async (req: Request, res: Response, next: NextFunc
 
       await user.save();
 
-      throw ["Email could not be sent", 500];
+      throw new ErrorResponse("Email could not be sent internal error", 500);
     }
-  } catch (error) {
+  } catch (error: any) {
+    // If an unknown error occurs
+    if (error?.status) console.log(`ForgotPassword error: ${error}`)
     next(error);
   }
 };
@@ -147,7 +153,7 @@ export const resetpassword = async (req: Request, res: Response, next: NextFunct
 
   try {
     // Throw an error if no reset token is provided
-    if (!resetPasswordToken) throw ["Missing reset token", 400];
+    if (!resetPasswordToken) throw new ErrorResponse("Missing reset token", 400)
 
     // Find the User matching the password valid reset token
     const user = await User.findOne({
@@ -158,7 +164,7 @@ export const resetpassword = async (req: Request, res: Response, next: NextFunct
     });
 
     // Invalid reset token
-    if (!user) throw ["Invalid reset token provided", 401];
+    if (!user) throw new ErrorResponse("Invalid reset token provided", 401);
 
     user.password = req.body.password;
     user.resetPasswordToken = "";
@@ -171,7 +177,9 @@ export const resetpassword = async (req: Request, res: Response, next: NextFunct
       success: true,
       data: "Password Reset Successful",
     });
-  } catch (error) {
+  } catch (error: any) {
+    // If an unknown error occurs
+    if (error?.status) console.log(`Reset Password error: ${error}`)
     next(error);
   }
 };

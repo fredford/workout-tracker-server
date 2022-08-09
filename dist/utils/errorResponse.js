@@ -9,3 +9,4 @@ class ErrorResponse extends Error {
     }
 }
 exports.ErrorResponse = ErrorResponse;
+//# sourceMappingURL=errorResponse.js.map

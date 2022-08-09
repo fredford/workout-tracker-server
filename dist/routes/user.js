@@ -13,3 +13,4 @@ router
     .put(auth_1.protect, user_1.updateUser)
     .delete(auth_1.protect, user_1.deleteUser);
 exports.default = router;
+//# sourceMappingURL=user.js.map

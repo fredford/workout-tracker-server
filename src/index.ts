@@ -73,18 +73,20 @@ app.use(errorHandler);
 
 const PORT = process.env.PORT || 8000;
 
-const index = app.listen(
-  app.listen(PORT, () => console.log(`Server running on port ${PORT}`))
-);
+if (process.env.NODE_ENV !== 'test') {
+  const index = app.listen(PORT, () => {
+    console.log(`Server on ${PORT}`)
+  });
+  const adminIndex = app.listen(8080, () => {
+    console.log(`Admin on ${PORT}`)
+  })
 
-const adminIndex = app.listen(
-  app.listen(8080, () => console.log("AdminJS is under localhost:8080/admin"))
-)
+  process.on("unhandledRejection", (err, promise) => {
+    console.log(`Logged Error: ${err}`);
+    adminIndex.close(() => process.exit(1))
+    index.close(() => process.exit(1));
+  });
+}
 
-process.on("unhandledRejection", (err, promise) => {
-  console.log(`Logged Error: ${err}`);
-  adminIndex.close(() => process.exit(1))
-  index.close(() => process.exit(1));
-});
 
 export default app;

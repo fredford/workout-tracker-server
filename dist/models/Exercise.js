@@ -41,3 +41,4 @@ ExerciseSchema.pre("deleteOne", function (next) {
 });
 const Exercise = mongoose_1.default.model("Exercise", ExerciseSchema);
 exports.default = Exercise;
+//# sourceMappingURL=Exercise.js.map

@@ -8,16 +8,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.protect = void 0;
-const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
-const User_1 = __importDefault(require("../models/User"));
 const errorResponse_1 = require("../utils/errorResponse");
+const utils_1 = require("../utils/utils");
 const protect = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
     let token;
     // Bearer is added to know that it is an authentication token
     if (req.headers.authorization &&
@@ -29,14 +24,7 @@ const protect = (req, res, next) => __awaiter(void 0, void 0, void 0, function* 
         return next(new errorResponse_1.ErrorResponse("Not authorized to access this route, missing token", 401));
     }
     try {
-        // Use JSON web token to verify that the token is valid
-        const { _id } = jsonwebtoken_1.default.verify(token, (_a = process.env.JWT_SECRET) !== null && _a !== void 0 ? _a : "");
-        const user = yield User_1.default.findById(_id);
-        // Check if the received User exists
-        if (user) {
-            throw new errorResponse_1.ErrorResponse("User not found", 404);
-        }
-        req.user = user;
+        req.user = yield (0, utils_1.getUserFromReq)(req);
         next();
     }
     catch (error) {
@@ -44,3 +32,4 @@ const protect = (req, res, next) => __awaiter(void 0, void 0, void 0, function* 
     }
 });
 exports.protect = protect;
+//# sourceMappingURL=auth.js.map

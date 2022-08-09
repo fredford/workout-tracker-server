@@ -15,7 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.getUserFromReq = void 0;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const errorResponse_1 = require("./errorResponse");
-const User_1 = __importDefault(require("../models/User"));
+const User_1 = require("../models/User");
 function getUserFromReq(req) {
     var _a, _b, _c, _d;
     return __awaiter(this, void 0, void 0, function* () {
@@ -26,13 +26,15 @@ function getUserFromReq(req) {
             throw new errorResponse_1.ErrorResponse("Authentication token not provided", 403);
         }
         // Use JSON web token to verify that the token is valid
-        const { _id } = jsonwebtoken_1.default.verify(token, (_d = process.env.JWT_SECRET) !== null && _d !== void 0 ? _d : "");
-        const user = yield User_1.default.findById(_id);
+        const decoded = jsonwebtoken_1.default.verify(token, (_d = process.env.JWT_SECRET) !== null && _d !== void 0 ? _d : "");
+        // Find the User
+        const user = yield User_1.User.findById(decoded.id);
         // Check if the received User exists
-        if (user) {
+        if (!user) {
             throw new errorResponse_1.ErrorResponse("User not found", 404);
         }
         return user;
     });
 }
 exports.getUserFromReq = getUserFromReq;
+//# sourceMappingURL=utils.js.map

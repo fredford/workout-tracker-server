@@ -31,3 +31,4 @@ const SetSchema = new mongoose_1.default.Schema({
 });
 const Set = mongoose_1.default.model("Set", SetSchema);
 exports.default = Set;
+//# sourceMappingURL=Set.js.map

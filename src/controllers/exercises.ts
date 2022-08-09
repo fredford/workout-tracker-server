@@ -6,6 +6,8 @@ import {ErrorResponse} from "../utils/errorResponse"
 import {NextFunction, Request, Response} from "express";
 import {getUserFromReq} from "../utils/utils";
 
+import mongoose from "mongoose";
+
 /**
  * Request controller that handles finding and returning Exercise Documents.
  * If 'id' is used as a query parameter with an ExerciseId then a specific
@@ -26,19 +28,31 @@ export const getExercises = async (req: Request, res: Response, next: NextFuncti
     ]
     query.push(user);
 
+    const queryId = req.query.id as string
+
+    if (queryId && !mongoose.Types.ObjectId.isValid(queryId)) {
+      throw new ErrorResponse("Exercise ID not valid", 404)
+    }
+
+
     // Searching for an Exercise by Id
-    if (req.query.id) {
-      const exercise = await Exercise.find({
-        user: {$in: query},
-        _id: req.query.id,
-      }).sort({name: 1});
+    if (queryId) {
+      // Query database for exercise ID provided
+      const exercise: ExerciseDocument | null = await Exercise.findOne({_id: queryId})
+        .populate("user")
 
       // No exercise is returned
-      if (!exercise.length) {
-        throw new ErrorResponse("No exercise found", 404)
+      if (!exercise) {
+        throw new ErrorResponse("Exercise not found", 404)
       }
+
+      const adminObjId = new mongoose.Types.ObjectId(process.env.ADMIN_ID as string)
+      if (exercise.user._id !== user._id && exercise.user._id.toString() !== process.env.ADMIN_ID as string) {
+        throw new ErrorResponse("Exercise not accessible", 401)
+      }
+
       // Respond with the exercise found
-      res.status(200).json({success: true, data: exercise[0]});
+      res.status(200).json({success: true, data: exercise});
     }
     // Searching for all Exercises
     else {
@@ -47,7 +61,9 @@ export const getExercises = async (req: Request, res: Response, next: NextFuncti
       }).sort({name: 1});
       res.status(200).json({success: true, data: exercises})
     }
-  } catch (error) {
+  } catch (error: any) {
+
+    if (!error.status) console.log(`getExercises error: ${error}`)
     next(error)
   }
 };

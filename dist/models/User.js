@@ -109,3 +109,4 @@ UserSchema.methods.getResetPasswordToken = function () {
     return resetToken;
 };
 exports.User = mongoose_1.default.model("User", UserSchema);
+//# sourceMappingURL=User.js.map

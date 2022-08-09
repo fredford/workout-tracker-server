@@ -33,3 +33,4 @@ WorkoutSchema.pre("deleteOne", function (next) {
 });
 const Workout = mongoose_1.default.model("Workout", WorkoutSchema);
 exports.default = Workout;
+//# sourceMappingURL=Workout.js.map
