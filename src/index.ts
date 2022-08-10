@@ -11,10 +11,10 @@ import dotenv from "dotenv";
 
 import routes from "./routes/routes";
 
-import errorHandler from "./middleware/error";
-import {User, UserDocument} from "./models/User";
+import defaultErrorHandler from "./middleware/error";
+import { User, UserDocument } from "./models/User";
 
-dotenv.config({path: "./.env"});
+dotenv.config({ path: "./.env" });
 
 const version = "/api/v1";
 
@@ -25,17 +25,19 @@ AdminJS.registerAdapter(AdminJSMongoose);
 
 // Run AdminJS with Mongoose
 const connectDB = async () => {
-  const mongooseDb = await mongoose.connect(process.env.WORKOUTTRACKER_DB_URI ?? "");
+  const mongooseDb = await mongoose.connect(
+    process.env.WORKOUTTRACKER_DB_URI ?? ""
+  );
 
-  const adminJs = new AdminJS({databases: [mongooseDb], rootPath: "/admin"});
+  const adminJs = new AdminJS({ databases: [mongooseDb], rootPath: "/admin" });
   const adminJSrouter = AdminJSExpress.buildAuthenticatedRouter(
     adminJs,
     {
       authenticate: async (email, password) => {
         if (email === "admin@admin.com") {
-          const user = await User.findOne({email: "admin@admin.com"}).select(
+          const user = (await User.findOne({ email: "admin@admin.com" }).select(
             "+password"
-          ) as any;
+          )) as any;
 
           const isMatch = await user.matchPasswords(password);
 
@@ -69,24 +71,23 @@ app.use(express.json());
 routes.forEach((route) => app.use(version, route));
 
 // Error Handler (last piece of middleware added)
-app.use(errorHandler);
+app.use(defaultErrorHandler);
 
 const PORT = process.env.PORT || 8000;
 
-if (process.env.NODE_ENV !== 'test') {
+if (process.env.NODE_ENV !== "test") {
   const index = app.listen(PORT, () => {
-    console.log(`Server on ${PORT}`)
+    console.log(`Server on ${PORT}`);
   });
   const adminIndex = app.listen(8080, () => {
-    console.log(`Admin on ${PORT}`)
-  })
+    console.log(`Admin on ${PORT}`);
+  });
 
   process.on("unhandledRejection", (err, promise) => {
     console.log(`Logged Error: ${err}`);
-    adminIndex.close(() => process.exit(1))
+    adminIndex.close(() => process.exit(1));
     index.close(() => process.exit(1));
   });
 }
-
 
 export default app;

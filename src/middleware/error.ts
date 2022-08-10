@@ -1,8 +1,13 @@
-import {ErrorResponse} from "../utils/errorResponse";
-import {NextFunction, Request, Response} from "express";
+import { ErrorResponse } from "../utils/errorResponse";
+import { NextFunction, Request, Response } from "express";
 
-const errorHandler = (err: any, req: Request, res: Response, next: NextFunction) => {
-  let error = {...err};
+const defaultErrorHandler = (
+  err: any,
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  let error = { ...err };
 
   error.message = err.message;
 
@@ -23,4 +28,4 @@ const errorHandler = (err: any, req: Request, res: Response, next: NextFunction)
   });
 };
 
-export default errorHandler;
+export default defaultErrorHandler;

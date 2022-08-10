@@ -35,7 +35,7 @@ const connectDB = () => __awaiter(void 0, void 0, void 0, function* () {
     const adminJSrouter = express_2.default.buildAuthenticatedRouter(adminJs, {
         authenticate: (email, password) => __awaiter(void 0, void 0, void 0, function* () {
             if (email === "admin@admin.com") {
-                const user = yield User_1.User.findOne({ email: "admin@admin.com" }).select("+password");
+                const user = (yield User_1.User.findOne({ email: "admin@admin.com" }).select("+password"));
                 const isMatch = yield user.matchPasswords(password);
                 if (isMatch) {
                     return user;
@@ -61,7 +61,7 @@ routes_1.default.forEach((route) => app.use(version, route));
 // Error Handler (last piece of middleware added)
 app.use(error_1.default);
 const PORT = process.env.PORT || 8000;
-if (process.env.NODE_ENV !== 'test') {
+if (process.env.NODE_ENV !== "test") {
     const index = app.listen(PORT, () => {
         console.log(`Server on ${PORT}`);
     });

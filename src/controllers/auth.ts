@@ -1,12 +1,12 @@
 // Library
 import crypto from "crypto";
-import errorHandler from "../middleware/error";
+import errorHandler from "../middleware/ErrorHandler";
 // Models
-import {User, UserDocument} from "../models/User";
+import { User, UserDocument } from "../models/User";
 // Utilities
-import {ErrorResponse} from "../utils/errorResponse";
+import { ErrorResponse } from "../utils/errorResponse";
 import sendEmail from "../utils/sendEmail";
-import {NextFunction, Request, Response} from "express";
+import { NextFunction, Request, Response } from "express";
 
 /**
  * Allows for a User to be registered with the server
@@ -14,15 +14,22 @@ import {NextFunction, Request, Response} from "express";
  * @param {Response} res Object for the HTTP response to be sent
  * @param {NextFunction} next Control passing
  */
-export const register = async (req: Request, res: Response, next: NextFunction) => {
+export const register = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   // Destructing request body
-  const {name, email, password} = req.body;
+  const { name, email, password } = req.body;
 
   // Attain request location
   const location = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
 
   // Attempt a User create with Mongoose
   try {
+    // Check the request body for missing parameters
+    errorHandler.checkVariables({ name, email, password }, "PleaseProvide");
+
     const user = await User.create({
       name,
       email,
@@ -37,7 +44,7 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
       next(new ErrorResponse("User already exists!", 409));
 
     // If an unknown error occurs
-    if (error?.status) console.log(`Register error: ${error}`)
+    if (!error.statusCode) console.log(`Register ${error}`);
     // All other errors
     next(error);
   }
@@ -49,30 +56,35 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
  * @param {object} res Object for the HTTP response to be sent
  * @param {*} next Control passing
  */
-export const login = async (req: Request, res: Response, next: NextFunction) => {
+export const login = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   // Destructing request body
-  const {email, password} = req.body;
+  const { email, password } = req.body;
 
   try {
-    // Check that request body is valid
-    if (!email || !password) throw new ErrorResponse("Please provide an email and password", 400)
+    // Check the request body for missing parameters
+    errorHandler.checkVariables({ email, password }, "PleaseProvide");
 
     // Query the database for a User with the given email
-    const user = await User.findOne({email}).select("+password");
+    const user = (await User.findOne({ email }).select(
+      "+password"
+    )) as UserDocument;
 
-    // If a User does not exist respond with an error
-    if (!user) throw new ErrorResponse("Invalid user credentials", 404)
+    // Check that a user was returned
+    errorHandler.checkVariables({ user }, "NotFound");
 
     // Check if the User provided password matches the database
-    const isMatch = await user.matchPasswords(password);
-
-    // If the passwords do not match return
-    if (!isMatch) throw new ErrorResponse("Invalid password credentials", 401)
+    if (!(await user.matchPasswords(password))) {
+      throw new ErrorResponse("Invalid password credentials", 401);
+    }
 
     sendToken(user, 200, res);
   } catch (error: any) {
     // If an unknown error occurs
-    if (error?.status) console.log(`Login error: ${error}`)
+    if (!error.statusCode) console.log(`Login ${error}`);
     next(error);
   }
 };
@@ -84,19 +96,23 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
  * @param {object} res Object for the HTTP response to be sent
  * @param {*} next Control passing
  */
-export const forgotpassword = async (req: Request, res: Response, next: NextFunction) => {
+export const forgotpassword = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   // Destructuring request body
-  const {email} = req.body
+  const { email } = req.body;
 
   try {
     // Check that the request body is valid
-    if (!email) throw new ErrorResponse("Please provide an email", 400)
+    errorHandler.checkVariables({ email }, "PleaseProvide");
 
     // Query the database for a User with the given email
-    const user = await User.findOne({email})
+    const user = (await User.findOne({ email })) as UserDocument;
 
     // If a User does not exist respond with an error
-    if (!user) throw new ErrorResponse("Email could not be sent", 404)
+    errorHandler.checkVariables({ user }, "NotFound");
 
     // Generate a reset password token
     const resetToken = user.getResetPasswordToken();
@@ -122,7 +138,7 @@ export const forgotpassword = async (req: Request, res: Response, next: NextFunc
       });
 
       // Respond with a success message
-      res.status(200).json({success: true, data: "Email Sent"});
+      res.status(200).json({ success: true, data: "Email Sent" });
     } catch (error) {
       user.resetPasswordToken = "";
       user.resetPasswordExpire = new Date();
@@ -133,7 +149,7 @@ export const forgotpassword = async (req: Request, res: Response, next: NextFunc
     }
   } catch (error: any) {
     // If an unknown error occurs
-    if (error?.status) console.log(`ForgotPassword error: ${error}`)
+    if (!error.statusCode) console.log(`ForgotPassword ${error}`);
     next(error);
   }
 };
@@ -144,7 +160,11 @@ export const forgotpassword = async (req: Request, res: Response, next: NextFunc
  * @param {object} res Object for the HTTP response to be sent
  * @param {*} next Control passing
  */
-export const resetpassword = async (req: Request, res: Response, next: NextFunction) => {
+export const resetpassword = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   // Process the reset token
   const resetPasswordToken = crypto
     .createHash("sha256")
@@ -153,18 +173,21 @@ export const resetpassword = async (req: Request, res: Response, next: NextFunct
 
   try {
     // Throw an error if no reset token is provided
-    if (!resetPasswordToken) throw new ErrorResponse("Missing reset token", 400)
+    errorHandler.checkVariables(
+      { "Reset token": resetPasswordToken },
+      "PleaseProvide"
+    );
 
     // Find the User matching the password valid reset token
-    const user = await User.findOne({
+    const user = (await User.findOne({
       resetPasswordToken,
       resetPasswordExpire: {
         $gt: Date.now(),
       },
-    });
+    })) as UserDocument;
 
     // Invalid reset token
-    if (!user) throw new ErrorResponse("Invalid reset token provided", 401);
+    errorHandler.checkVariables({ "Reset token": user }, "Invalid");
 
     user.password = req.body.password;
     user.resetPasswordToken = "";
@@ -179,12 +202,12 @@ export const resetpassword = async (req: Request, res: Response, next: NextFunct
     });
   } catch (error: any) {
     // If an unknown error occurs
-    if (error?.status) console.log(`Reset Password error: ${error}`)
+    if (!error.statusCode) console.log(`Reset Password ${error}`);
     next(error);
   }
 };
 
 const sendToken = (user: UserDocument, statusCode: number, res: Response) => {
   const token = user.getSignedToken();
-  res.status(statusCode).json({success: true, token});
+  res.status(statusCode).json({ success: true, token });
 };

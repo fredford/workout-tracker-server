@@ -8,7 +8,7 @@
     "build": "tsc",
     "prestart": "npm run build",
     "start": "node .",
-    "test": "jest --forceExit --detectOpenHandles  --watchAll --maxWorkers=1"
+    "test": "jest --forceExit --detectOpenHandles  --watchAll --maxWorkers=1 --verbose"
   },
   "repository": {
     "type": "git",

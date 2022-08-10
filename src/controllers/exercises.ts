@@ -1,12 +1,9 @@
-import jwt from "jsonwebtoken";
+import Exercise, { ExerciseDocument } from "../models/Exercise";
+import { User, UserDocument } from "../models/User";
+import { ErrorResponse } from "../utils/errorResponse";
+import { NextFunction, Request, Response } from "express";
 
-import Exercise, {ExerciseDocument} from "../models/Exercise";
-import {User, UserDocument} from "../models/User";
-import {ErrorResponse} from "../utils/errorResponse"
-import {NextFunction, Request, Response} from "express";
-import {getUserFromReq} from "../utils/utils";
-
-import mongoose from "mongoose";
+import errorHandler from "../middleware/ErrorHandler";
 
 /**
  * Request controller that handles finding and returning Exercise Documents.
@@ -17,54 +14,48 @@ import mongoose from "mongoose";
  * @param {Response} res Object for the HTTP response to be sent
  * @param {NextFunction} next Control passing
  */
-export const getExercises = async (req: Request, res: Response, next: NextFunction) => {
+export const getExercises = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     // Get User Document from Protected Request
     const user: UserDocument = req.user;
 
-    const query = [
-      user,
-      process.env.ADMIN_ID
-    ]
-    query.push(user);
-
-    const queryId = req.query.id as string
-
-    if (queryId && !mongoose.Types.ObjectId.isValid(queryId)) {
-      throw new ErrorResponse("Exercise ID not valid", 404)
-    }
-
+    const query = [user, process.env.ADMIN_ID];
 
     // Searching for an Exercise by Id
-    if (queryId) {
+    if (req.query.id) {
+      const queryId = errorHandler.checkQueryId([
+        "Exercise ID",
+        req.query.id as string,
+      ]);
       // Query database for exercise ID provided
-      const exercise: ExerciseDocument | null = await Exercise.findOne({_id: queryId})
-        .populate("user")
+      const exercise = (await Exercise.findOne({
+        _id: queryId,
+      }).populate("user")) as ExerciseDocument;
 
-      // No exercise is returned
-      if (!exercise) {
-        throw new ErrorResponse("Exercise not found", 404)
-      }
-
-      const adminObjId = new mongoose.Types.ObjectId(process.env.ADMIN_ID as string)
-      if (exercise.user._id !== user._id && exercise.user._id.toString() !== process.env.ADMIN_ID as string) {
-        throw new ErrorResponse("Exercise not accessible", 401)
-      }
+      // Check if an Exercise Document is returned
+      errorHandler.checkVariables({ exercise }, "NotFound");
+      // Check that correct Exercise Document is returned
+      errorHandler.checkValidQuery(exercise, queryId);
+      // Check if the User has access to the Exercise Document
+      errorHandler.checkDocumentAccess(exercise, user);
 
       // Respond with the exercise found
-      res.status(200).json({success: true, data: exercise});
+      res.status(200).json({ success: true, data: exercise });
     }
     // Searching for all Exercises
     else {
       const exercises = await Exercise.find({
-        user: {$in: query},
-      }).sort({name: 1});
-      res.status(200).json({success: true, data: exercises})
+        user: { $in: query },
+      }).sort({ name: 1 });
+      res.status(200).json({ success: true, data: exercises });
     }
   } catch (error: any) {
-
-    if (!error.status) console.log(`getExercises error: ${error}`)
-    next(error)
+    if (!error.statusCode) console.log(`Get Exercises ${error}`);
+    next(error);
   }
 };
 
@@ -74,13 +65,20 @@ export const getExercises = async (req: Request, res: Response, next: NextFuncti
  * @param {Response} res Object for the HTTP response to be sent
  * @param {NextFunction} next Control passing
  */
-export const addExercise = async (req: Request, res: Response, next: NextFunction) => {
+export const addExercise = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
-    // Get data from the request body
-    const {name, area, type} = req.body
-
     // Get User Document from Protected Request
-    const user: UserDocument = req.user
+    const user: UserDocument = req.user;
+
+    // Get data from the request body
+    const { name, area, type } = req.body;
+
+    // Check the request body for missing parameters
+    errorHandler.checkVariables({ name, area, type }, "PleaseProvide");
 
     // Create Exercise Document
     const exercise = await Exercise.create({
@@ -92,8 +90,9 @@ export const addExercise = async (req: Request, res: Response, next: NextFunctio
     });
 
     // Respond with success and the created Exercise Document
-    res.status(201).json({success: true, data: exercise});
-  } catch (error) {
+    res.status(201).json({ success: true, data: exercise });
+  } catch (error: any) {
+    if (!error.statusCode) console.log(`Add Exercises ${error}`);
     next(error);
   }
 };
@@ -104,28 +103,40 @@ export const addExercise = async (req: Request, res: Response, next: NextFunctio
  * @param {Response} res Object for the HTTP response to be sent
  * @param {NextFunction} next Control passing
  */
-export const deleteExercise = async (req: Request, res: Response, next: NextFunction) => {
+export const deleteExercise = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
-    // Get ExerciseId from query
-    const exerciseId = req.query.id
-
     // Get User Document from Protected Request
-    const user: UserDocument = req.user
+    const user: UserDocument = req.user;
+
+    // Check that the exercise ID is a valid ObjectId
+    const exerciseId = errorHandler.checkQueryId([
+      "Exercise ID",
+      req.query.id as string,
+    ]);
 
     // Query for the Exercise Document of the ExerciseId provided
-    const exercise: ExerciseDocument = await Exercise
-      .findById(exerciseId)
-      .populate("user") as any;
+    const exercise = (await Exercise.findById(exerciseId).populate(
+      "user"
+    )) as ExerciseDocument;
 
-    // If the User associated to the Exercise is the same as the requesting User
-    if (exercise.user._id.toString() === user._id) {
+    // Check that the correct Exercise Document is found
+    errorHandler.checkValidQuery(exercise, exerciseId);
+
+    // Check if the User associated to the Exercise is the same as the requesting User
+    if (exercise.user._id.toString() === user._id.toString()) {
       exercise.deleteOne();
+    } else {
+      throw new ErrorResponse("User cannot delete exercise", 403);
     }
 
     // Respond with success and a success message
-    res.status(200).json({success: true, data: "Success"});
-  } catch (error) {
-    console.error(`Unable to delete exercise: ${error}`);
+    res.status(200).json({ success: true, data: "Success" });
+  } catch (error: any) {
+    if (!error.statusCode) console.log(`Delete Exercises ${error}`);
     next(error);
   }
 };
