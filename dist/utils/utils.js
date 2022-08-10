@@ -16,6 +16,7 @@ exports.getUserFromReq = void 0;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const errorResponse_1 = require("./errorResponse");
 const User_1 = require("../models/User");
+const ErrorHandler_1 = __importDefault(require("../middleware/ErrorHandler"));
 function getUserFromReq(req) {
     var _a, _b, _c, _d;
     return __awaiter(this, void 0, void 0, function* () {
@@ -30,9 +31,7 @@ function getUserFromReq(req) {
         // Find the User
         const user = yield User_1.User.findById(decoded.id);
         // Check if the received User exists
-        if (!user) {
-            throw new errorResponse_1.ErrorResponse("User not found", 404);
-        }
+        ErrorHandler_1.default.checkVariables({ user }, "NotFound");
         return user;
     });
 }
