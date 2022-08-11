@@ -1,13 +1,15 @@
+// Library imports
 import mongoose, { Types } from "mongoose";
+// Mongoose Models
 import SetModel from "./Set";
 
 export type ExerciseDocument = mongoose.Document & {
-  _id: Types.ObjectId;
-  name: string;
-  area: string;
-  type: string;
-  user: Types.ObjectId;
-  isAdmin: boolean;
+  _id: Types.ObjectId; // Exercise idenfication
+  name: string; // Exercise name eg. "Push-ups"
+  area: string; // Exercise area eg. "Upper
+  type: string; // Exercise type eg. "Repetitions",
+  user: Types.ObjectId; // Exercise user ObjectId
+  isAdmin: boolean; // Exercise created by admin
 };
 
 // Model Schema for Exercises

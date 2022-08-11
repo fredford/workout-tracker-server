@@ -2,10 +2,10 @@ import mongoose, { Types } from "mongoose";
 import SetModel from "./Set";
 
 export type WorkoutDocument = mongoose.Document & {
-  _id: Types.ObjectId;
-  date: Date;
-  type: string;
-  user: Types.ObjectId;
+  _id: Types.ObjectId; // Workout indentification
+  date: Date; // Date the workout was created
+  type: string; // Workout type eg. "Maintenance",
+  user: Types.ObjectId; // Workout user ObjectId
 };
 
 const WorkoutSchema = new mongoose.Schema({

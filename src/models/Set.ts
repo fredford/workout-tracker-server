@@ -1,4 +1,5 @@
-import mongoose, {Types} from "mongoose";
+// Library imports
+import mongoose, { Types } from "mongoose";
 
 export type SetDocument = mongoose.Document & {
   _id: Types.ObjectId;
@@ -7,8 +8,9 @@ export type SetDocument = mongoose.Document & {
   exercise: Types.ObjectId;
   user: Types.ObjectId;
   amount: string;
-}
+};
 
+// Model Schema for Sets
 const SetSchema = new mongoose.Schema<SetDocument>({
   date: {
     type: Date,
