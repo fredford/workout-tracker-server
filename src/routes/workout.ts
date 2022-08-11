@@ -1,13 +1,16 @@
 import express from "express";
-import {deleteWorkout, getWorkout} from "../controllers/workout";
+import { lastWorkout } from "../controllers/workout";
+import { getDocumentById, deleteDocument } from "../middleware/basicAPI";
 
-import {protect} from "../middleware/auth";
+import { protect } from "../middleware/auth";
 
 const router = express.Router();
 
 router
-  .route("/workout/:workoutId")
-  .get(protect, getWorkout)
-  .delete(protect, deleteWorkout);
+  .route("/workout")
+  .get(protect, getDocumentById)
+  .delete(protect, deleteDocument);
+
+router.route("/lastworkout").get(protect, lastWorkout);
 
 export default router;

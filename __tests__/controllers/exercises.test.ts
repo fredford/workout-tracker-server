@@ -42,7 +42,7 @@ describe("Test Exercises - getExercises", () => {
     const exerciseId: string = "62f1deb040fb5a76217f7151";
 
     const res2 = await request(app)
-      .get(`${version}/exercises?id=${exerciseId}`)
+      .get(`${version}/exercise?id=${exerciseId}`)
       .set("Accept", "application/json")
       .set("authorization", `Bearer ${token}`);
     expect(res2.body.success).toEqual(true);
@@ -55,11 +55,11 @@ describe("Test Exercises - getExercises", () => {
     const exerciseId2: string = "12345";
 
     const res2 = await request(app)
-      .get(`${version}/exercises?id=${exerciseId2}`)
+      .get(`${version}/exercise?id=${exerciseId2}`)
       .set("Accept", "application/json")
       .set("authorization", `Bearer ${token}`);
     expect(res2.body.success).toEqual(false);
-    expect(res2.body.error).toEqual("Exercise ID is invalid");
+    expect(res2.body.error).toEqual("ID is invalid");
     expect(res2.status).toEqual(400);
   });
 
@@ -68,7 +68,7 @@ describe("Test Exercises - getExercises", () => {
     const exerciseId: string = "62f341342acd590c4f5a0547";
 
     const res2 = await request(app)
-      .get(`${version}/exercises?id=${exerciseId}`)
+      .get(`${version}/exercise?id=${exerciseId}`)
       .set("Accept", "application/json")
       .set("authorization", `Bearer ${token}`);
     expect(res2.body.success).toEqual(false);
@@ -81,11 +81,11 @@ describe("Test Exercises - getExercises", () => {
     const exerciseId2: string = "62f1deb040fb5a76217f7152";
 
     const res2 = await request(app)
-      .get(`${version}/exercises?id=${exerciseId2}`)
+      .get(`${version}/exercise?id=${exerciseId2}`)
       .set("Accept", "application/json")
       .set("authorization", `Bearer ${token}`);
     expect(res2.body.success).toEqual(false);
-    expect(res2.body.error).toEqual("Exercise not found");
+    expect(res2.body.error).toEqual("Result not found");
     expect(res2.status).toEqual(404);
   });
 });
@@ -134,7 +134,7 @@ describe("Test Delete Exercise - DELETE", () => {
   // Delete Exercise for Test User
   it("Delete an Exercise from /exercises", async () => {
     const res2 = await request(app)
-      .delete(`${version}/exercises?id=${exerciseId}`)
+      .delete(`${version}/exercise?id=${exerciseId}`)
       .set("Accept", "application/json")
       .set("authorization", `Bearer ${token}`);
     expect(res2.body.success).toEqual(true);
@@ -147,11 +147,11 @@ describe("Test Delete Exercise - DELETE", () => {
     let id = "62f1deb040fb5a76217f7151";
 
     const res2 = await request(app)
-      .delete(`${version}/exercises?id=${id}`)
+      .delete(`${version}/exercise?id=${id}`)
       .set("Accept", "application/json")
       .set("authorization", `Bearer ${token}`);
     expect(res2.body.success).toEqual(false);
-    expect(res2.body.error).toEqual("User cannot delete exercise");
+    expect(res2.body.error).toEqual("User cannot delete Exercise(s)");
     expect(res2.status).toEqual(403);
   });
 
@@ -160,11 +160,11 @@ describe("Test Delete Exercise - DELETE", () => {
     let id = "12345";
 
     const res2 = await request(app)
-      .delete(`${version}/exercises?id=${id}`)
+      .delete(`${version}/exercise?id=${id}`)
       .set("Accept", "application/json")
       .set("authorization", `Bearer ${token}`);
     expect(res2.body.success).toEqual(false);
-    expect(res2.body.error).toEqual("Exercise ID is invalid");
+    expect(res2.body.error).toEqual("ID is invalid");
     expect(res2.status).toEqual(400);
   });
 });

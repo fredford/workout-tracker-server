@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { Types } from "mongoose";
 
 import Exercise from "../models/Exercise";
+import Workout from "../models/Workout";
 import { UserDocument } from "../models/User";
 import errorHandler from "./ErrorHandler";
 
@@ -28,8 +29,8 @@ export const getAllDocuments = async (
       .sort({ name: 1 });
     // Respond with the results from the query
     res.status(200).json({ success: true, data: results });
-  } catch (error) {
-    console.log(`GET all ${modelObj.type} ${error}`);
+  } catch (error: any) {
+    if (!error.statusCode) console.log(`GET all ${modelObj.type} ${error}`);
     next(error);
   }
 };
@@ -59,8 +60,8 @@ export const getDocumentById = async (
     errorHandler.checkDocumentAccess(result, user);
     // Respond with the Document found
     res.status(200).json({ success: true, data: result });
-  } catch (error) {
-    console.log(`Get By ID ${modelObj.type} ${error}`);
+  } catch (error: any) {
+    if (!error.statusCode) console.log(`Get By ID ${modelObj.type} ${error}`);
     next(error);
   }
 };
@@ -82,8 +83,8 @@ export const postDocument = async (
     );
     // Respond with the created Document
     res.status(201).json({ success: true, data: result });
-  } catch (error) {
-    console.log(`POST new ${modelObj.type} ${error}`);
+  } catch (error: any) {
+    if (!error.statusCode) console.log(`POST new ${modelObj.type} ${error}`);
     next(error);
   }
 };
@@ -122,7 +123,7 @@ export const deleteDocument = async (
     // Respond with success and a success message
     res.status(200).json({ success: true, data: "Success" });
   } catch (error: any) {
-    console.log(`Delete one ${modelObj.type} ${error}`);
+    if (!error.statusCode) console.log(`Delete one ${modelObj.type} ${error}`);
     next(error);
   }
 };
@@ -152,6 +153,20 @@ const Models: IModels = {
     type: "Exercise(s)",
     createObj: (reqBody: JSON, user: UserDocument) => {
       return { user, ...reqBody, isAdmin: user._id === process.env.ADMIN_ID };
+    },
+  },
+  "/workouts": {
+    model: Workout,
+    type: "Workout(s)",
+    createObj: (reqBody: JSON, user: UserDocument) => {
+      return { user, ...reqBody };
+    },
+  },
+  "/workout": {
+    model: Workout,
+    type: "Workout(s)",
+    createObj: (reqBody: JSON, user: UserDocument) => {
+      return { user, ...reqBody };
     },
   },
 };

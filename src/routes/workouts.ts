@@ -1,10 +1,14 @@
 import express from "express";
-import {addWorkout, getWorkouts} from "../controllers/workouts";
 
-import {protect} from "../middleware/auth";
+import { protect } from "../middleware/auth";
 
 const router = express.Router();
 
-router.route("/workouts").get(protect, getWorkouts).post(protect, addWorkout);
+import { getAllDocuments, postDocument } from "../middleware/basicAPI";
+
+router
+  .route("/workouts")
+  .get(protect, getAllDocuments)
+  .post(protect, postDocument);
 
 export default router;
