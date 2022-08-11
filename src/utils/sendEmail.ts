@@ -6,6 +6,10 @@ interface IOptions {
   text: string;
 }
 
+/**
+ * Utility for sending an email to the user for a reset password.
+ * @param options: sender information object
+ */
 const sendEmail = (options: IOptions) => {
   const transporter = nodemailer.createTransport({
     service: process.env.EMAIL_SERVICE,
@@ -14,7 +18,6 @@ const sendEmail = (options: IOptions) => {
       pass: process.env.EMAIL_PASSWORD,
     },
   });
-
   const mailOptions = {
     from: process.env.EMAIL_FROM,
     to: options.to,

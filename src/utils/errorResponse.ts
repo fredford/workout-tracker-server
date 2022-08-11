@@ -1,5 +1,4 @@
 // Relay for handling error messages and their corresponding status code.
-
 export class ErrorResponse extends Error {
   statusCode: number;
   constructor(message: string, statusCode: number) {
