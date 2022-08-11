@@ -60,7 +60,13 @@ export const addSet = async (
     next(error);
   }
 };
-
+/**
+ * Request controller that handles getting all SetDocuments for
+ * for a given Workout.
+ * @param {Request} req Object for the HTTP request received
+ * @param {Response} res Object for the HTTP response to be sent
+ * @param {NextFunction} next Control passing
+ */
 export const getSets = async (
   req: Request,
   res: Response,

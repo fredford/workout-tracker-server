@@ -1,10 +1,9 @@
-import SetModel from "../models/Set";
-
-import { ErrorResponse } from "../utils/errorResponse";
+// Library imports
 import { NextFunction, Request, Response } from "express";
+// Mongoose Models
+import SetModel from "../models/Set";
 import { UserDocument } from "../models/User";
-import User from "../routes/user";
-import { errorMonitor } from "events";
+// Utilities
 import errorHandler from "../middleware/ErrorHandler";
 
 interface IOutput {

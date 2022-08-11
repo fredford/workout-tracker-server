@@ -1,12 +1,12 @@
+// Library imports
 import { Request, Response, NextFunction } from "express";
-import { Types } from "mongoose";
-
+// Mongoose Models
 import Exercise from "../models/Exercise";
 import Workout from "../models/Workout";
 import SetModel from "../models/Set";
 import { UserDocument } from "../models/User";
+// Utilities
 import errorHandler from "./ErrorHandler";
-
 import { ErrorResponse } from "../utils/errorResponse";
 
 /**

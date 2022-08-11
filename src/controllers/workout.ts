@@ -1,8 +1,10 @@
+// Library imports
+import { NextFunction, Request, Response } from "express";
+// Mongoose Models
 import Workout from "../models/Workout";
 import { UserDocument } from "../models/User";
 import SetModel from "../models/Set";
-import { NextFunction, Request, Response } from "express";
-
+// Utilities
 import errorHandler from "../middleware/ErrorHandler";
 
 /**
