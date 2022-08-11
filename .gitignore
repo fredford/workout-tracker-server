@@ -4,4 +4,4 @@ node_modules
 TODO
 .idea/*
 coverage
-dist
+dist/
