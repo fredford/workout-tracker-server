@@ -11,7 +11,7 @@ import dotenv from "dotenv";
 
 import routes from "./routes/routes";
 
-import defaultErrorHandler from "./middleware/error";
+import errorTransmission from "./middleware/errorTransmission";
 import { User, UserDocument } from "./models/User";
 
 dotenv.config({ path: "./.env" });
@@ -71,7 +71,7 @@ app.use(express.json());
 routes.forEach((route) => app.use(version, route));
 
 // Error Handler (last piece of middleware added)
-app.use(defaultErrorHandler);
+app.use(errorTransmission);
 
 const PORT = process.env.PORT || 8000;
 

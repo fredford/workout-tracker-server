@@ -1,10 +1,15 @@
-import { NextFunction, Response } from "express";
-
-import { ErrorResponse } from "../utils/errorResponse";
+// Library imports
 import mongoose from "mongoose";
-
+// Utilities
+import { ErrorResponse } from "../utils/errorResponse";
+// Mongoose Models
 import { UserDocument } from "../models/User";
 
+/**
+ * Class for checking user inputs, database results and user access
+ * requests. Handles the majority of common operations across the
+ * application.
+ */
 class ErrorHandler {
   /**
    * Method to check if variables are valid
@@ -37,12 +42,21 @@ class ErrorHandler {
     return queryId[1];
   }
 
+  /**
+   * Verify that the results of the query are valid
+   * @param document - mongoose document object
+   * @param queryId - ObjectId used to query the database
+   */
   checkValidQuery(document: any, queryId: string): void {
-    if (document._id.toString() !== queryId) {
+    if (document._id.toString() !== queryId)
       throw new ErrorResponse(errorTypes.QueryNotValid(), 500);
-    }
   }
 
+  /**
+   * Check if the requesting User has access to this document
+   * @param document -mongoose document object
+   * @param user - UserDocument of the requester to be compared against
+   */
   checkDocumentAccess(document: any, user: UserDocument): void {
     if (
       document.user._id.toString() !== user._id.toString() &&
@@ -53,10 +67,18 @@ class ErrorHandler {
   }
 }
 
-const upperCaseFirst = (input: string) => {
+/**
+ * Helper function to capitalize the first letter of a string
+ * @param input - input string to be capitalized
+ * @returns - string with a capitalized first letter
+ */
+const upperCaseFirst = (input: string): string => {
   return input.charAt(0).toUpperCase() + input.slice(1);
 };
 
+/**
+ * Object containing functions that will provide tailored error messages
+ */
 const errorTypes = {
   PleaseProvide: (key: string) =>
     `Please provide ${key.match("^[aieouAIEOU].*") ? "an" : "a"} ${key}`,

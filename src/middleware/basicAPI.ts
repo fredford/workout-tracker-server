@@ -8,6 +8,13 @@ import errorHandler from "./ErrorHandler";
 
 import { ErrorResponse } from "../utils/errorResponse";
 
+/**
+ * Request controller for finding and returning all
+ * documents for an endpoint
+ * @param {Request} req Object for the HTTP request received
+ * @param {Response} res Object for the HTTP response to be sent
+ * @param {NextFunction} next Control passing
+ */
 export const getAllDocuments = async (
   req: Request,
   res: Response,
@@ -35,6 +42,13 @@ export const getAllDocuments = async (
   }
 };
 
+/**
+ * Request controller for finding and returning a specific Document
+ * from a given ObjectID
+ * @param {Request} req Object for the HTTP request received
+ * @param {Response} res Object for the HTTP response to be sent
+ * @param {NextFunction} next Control passing
+ */
 export const getDocumentById = async (
   req: Request,
   res: Response,
@@ -66,6 +80,13 @@ export const getDocumentById = async (
   }
 };
 
+/**
+ * Request controller for adding a new Document to the database for
+ * a given endpoint
+ * @param {Request} req Object for the HTTP request received
+ * @param {Response} res Object for the HTTP response to be sent
+ * @param {NextFunction} next Control passing
+ */
 export const postDocument = async (
   req: Request,
   res: Response,
@@ -89,6 +110,13 @@ export const postDocument = async (
   }
 };
 
+/**
+ * Request controller for deleting a Document from the database for
+ * a given endpoint
+ * @param {Request} req Object for the HTTP request received
+ * @param {Response} res Object for the HTTP response to be sent
+ * @param {NextFunction} next Control passing
+ */
 export const deleteDocument = async (
   req: Request,
   res: Response,
@@ -129,18 +157,17 @@ export const deleteDocument = async (
   }
 };
 
+// Interface for an object with strings for keys.
 interface IModels {
   [key: string]: any;
 }
 
-interface IExercise {
-  name: string;
-  area: string;
-  type: string;
-  user: Types.ObjectId;
-  isAdmin: boolean;
-}
-
+/**
+ * Object that represents each endpoint
+ * @model - Model object for the endpoint
+ * @type - Document type for the endpoint
+ * @createObj - Method for data to be used in creating a new Document
+ */
 const Models: IModels = {
   "/exercises": {
     model: Exercise,
