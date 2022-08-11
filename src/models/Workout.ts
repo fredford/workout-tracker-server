@@ -1,12 +1,12 @@
 import mongoose, { Types } from "mongoose";
-import Set from "./Set";
+import SetModel from "./Set";
 
 export type WorkoutDocument = mongoose.Document & {
   _id: Types.ObjectId;
   date: Date;
   type: string;
   user: Types.ObjectId;
-}
+};
 
 const WorkoutSchema = new mongoose.Schema({
   date: {
@@ -28,10 +28,9 @@ const WorkoutSchema = new mongoose.Schema({
  * Middleware executed when deleteOne operation is called to clean up Sets
  */
 WorkoutSchema.pre("deleteOne", function (this: WorkoutDocument, next) {
-
-  Set.deleteMany({ workout: { _id: this._id } })
+  SetModel.deleteMany({ workout: { _id: this._id } })
     .then()
-    .catch( (error: Promise<void>) => {
+    .catch((error: Promise<void>) => {
       console.log(error);
     });
 

@@ -2,7 +2,7 @@
 import { NextFunction, Request, Response } from "express";
 // Models
 import Exercise from "../models/Exercise";
-import Set from "../models/Set";
+import SetModel from "../models/Set";
 import { UserDocument } from "../models/User";
 import Workout from "../models/Workout";
 // Utilities
@@ -45,7 +45,7 @@ export const addSet = async (
     errorHandler.checkValidQuery(workout, workoutId);
 
     // Create the Set with Mongoose
-    const set = await Set.create({
+    const set = await SetModel.create({
       date,
       exercise,
       workout,
@@ -80,7 +80,7 @@ export const getSets = async (
     // Check that the workout was correctly returned
     errorHandler.checkValidQuery(workout, workoutId);
     // Query database for workout ID related Set Documents
-    const results = await Set.find({
+    const results = await SetModel.find({
       user: user._id,
       workout: workoutId,
     })

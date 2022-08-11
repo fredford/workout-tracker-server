@@ -3,6 +3,7 @@ import { Types } from "mongoose";
 
 import Exercise from "../models/Exercise";
 import Workout from "../models/Workout";
+import SetModel from "../models/Set";
 import { UserDocument } from "../models/User";
 import errorHandler from "./ErrorHandler";
 
@@ -198,7 +199,7 @@ const Models: IModels = {
     },
   },
   "/sets": {
-    model: Set,
+    model: SetModel,
     type: "Set(s)",
   },
 };

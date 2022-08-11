@@ -1,6 +1,6 @@
 import Workout from "../models/Workout";
 import { UserDocument } from "../models/User";
-import Set from "../models/Set";
+import SetModel from "../models/Set";
 import { NextFunction, Request, Response } from "express";
 
 import errorHandler from "../middleware/ErrorHandler";
@@ -36,7 +36,7 @@ export const lastWorkout = async (
     // Check that the Document is accessible to the User
     errorHandler.checkDocumentAccess(workout, user);
     // Get the list of sets for this workout
-    const sets = await Set.find({ workout: workout._id });
+    const sets = await SetModel.find({ workout: workout._id });
     // Compute the number of sets performed
     const setsCount = sets.length;
     // Calculate the total number of repetitions performed

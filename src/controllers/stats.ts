@@ -1,6 +1,4 @@
-import jwt from "jsonwebtoken";
-
-import SetModel, { SetDocument } from "../models/Set";
+import SetModel from "../models/Set";
 
 import { ErrorResponse } from "../utils/errorResponse";
 import { NextFunction, Request, Response } from "express";
