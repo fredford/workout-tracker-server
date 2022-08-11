@@ -30,6 +30,8 @@ const getUser = (req, res, next) => __awaiter(void 0, void 0, void 0, function* 
         });
     }
     catch (error) {
+        if (!error.statusCode)
+            console.log(`Get User - ${error}`);
         next(error);
     }
 });
@@ -45,29 +47,30 @@ const updateUser = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
         // Get the User Document from the request token
         const user = yield (0, utils_1.getUserFromReq)(req);
         // JSON information for User updates
-        const updatedUser = req.body ?
-            req.body :
-            next(new errorResponse_1.ErrorResponse("Request body not provided", 400));
-        // Update name of the User
-        if (updatedUser.name && updatedUser.name.length > 0) {
-            user.name = updatedUser.name;
+        if (Object.keys(req.body).length === 0) {
+            throw new errorResponse_1.ErrorResponse("Request body not provided", 400);
         }
-        else {
-            next(new errorResponse_1.ErrorResponse("Invalid name provided", 400));
+        // Update name of the User
+        if (req.body.name && req.body.name.length > 3) {
+            user.name = req.body.name;
+        }
+        else if (req.body.name) {
+            throw new errorResponse_1.ErrorResponse("Invalid name provided", 400);
         }
         // Update password of the User
-        if (updatedUser.password && updatedUser.password.length > 5) {
-            user.password = updatedUser.password;
+        if (req.body.password && req.body.password.length > 5) {
+            user.password = req.body.password;
         }
-        else {
-            next(new errorResponse_1.ErrorResponse("Invalid password provided", 400));
+        else if (req.body.password) {
+            throw new errorResponse_1.ErrorResponse("Invalid password provided", 400);
         }
         // Update theme of the User
-        if (updatedUser.theme && (updatedUser.theme === "light" || updatedUser.theme === "dark")) {
-            user.theme = updatedUser.theme;
+        if (req.body.theme &&
+            (req.body.theme === "light" || req.body.theme === "dark")) {
+            user.theme = req.body.theme;
         }
         else {
-            next(new errorResponse_1.ErrorResponse("Invalid theme provided", 400));
+            throw new errorResponse_1.ErrorResponse("Invalid theme provided", 400);
         }
         // Save updates with Mongoose
         yield user.save();
@@ -83,6 +86,8 @@ const updateUser = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
         });
     }
     catch (error) {
+        if (!error.statusCode)
+            console.log(`Update User - ${error}`);
         next(error);
     }
 });

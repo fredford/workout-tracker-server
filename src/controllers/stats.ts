@@ -1,46 +1,50 @@
 import jwt from "jsonwebtoken";
 
-import SetModel, {SetDocument} from "../models/Set";
+import SetModel, { SetDocument } from "../models/Set";
 
-import {ErrorResponse} from "../utils/errorResponse";
-import {NextFunction, Request, Response} from "express";
-import {UserDocument} from "../models/User";
+import { ErrorResponse } from "../utils/errorResponse";
+import { NextFunction, Request, Response } from "express";
+import { UserDocument } from "../models/User";
 import User from "../routes/user";
+import { errorMonitor } from "events";
+import errorHandler from "../middleware/ErrorHandler";
 
 interface IOutput {
-  stats: { [key: string]: any },
-  cumulative: { [key: string]: any },
-  workoutProgression: { [key: string]: any },
-  setProgression: { [key: string]: any }
+  stats: { [key: string]: any };
+  cumulative: { [key: string]: any };
+  workoutProgression: { [key: string]: any };
+  setProgression: { [key: string]: any };
 }
 
-export const getExerciseData = async (req: Request, res: Response, next: NextFunction) => {
-  const query = [];
-
+export const getExerciseData = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     // Get the User Document from the Request
-    const user: UserDocument = req.user
-
+    const user: UserDocument = req.user;
     // Get the ExerciseId from request parameters
-    const {exerciseId} = req.params;
-
-    // Add User id to the query
-    query.push(user._id);
-
+    const { exerciseId } = req.params;
+    // Check if a valid ObjectID is provided
+    errorHandler.checkQueryId(["ID", exerciseId]);
     // Query for Set Documents with the ExerciseId provided by the User
     const sets = await SetModel.find({
-      user: {$in: query},
+      user: user._id,
       exercise: exerciseId,
     })
       .populate("workout")
       .populate("exercise");
+
+    // Check if any Sets were found
+    errorHandler.checkVariables({ sets }, "NotFound");
 
     // Initialize the Output object
     const output: IOutput = {
       stats: {},
       cumulative: {},
       workoutProgression: {},
-      setProgression: {}
+      setProgression: {},
     };
 
     // Compute the total number of Reps performed in the Sets
@@ -49,9 +53,9 @@ export const getExerciseData = async (req: Request, res: Response, next: NextFun
       .reduce((prev, curr) => prev + curr);
 
     /* Assign Stats object information
-    * Total - total number of repetitions performed
-    * Average - average number of repetitions performed
-    * Max - maximum number of repetitions performed */
+     * Total - total number of repetitions performed
+     * Average - average number of repetitions performed
+     * Max - maximum number of repetitions performed */
     output.stats.Total = total;
     output.stats.Average = (
       Math.round((total / sets.length) * 100) / 100
@@ -67,7 +71,6 @@ export const getExerciseData = async (req: Request, res: Response, next: NextFun
 
     // Iterate through each Set Document
     for (const set of sets) {
-
       // Format the stored Date
       const date = new Date(set.date)
         .toISOString()
@@ -113,22 +116,22 @@ export const getExerciseData = async (req: Request, res: Response, next: NextFun
       output.setProgression[`${date} Set ${setCounter}`] = amount;
     }
 
-    res.status(200).json({success: true, data: output});
-  } catch (error) {
-    console.log(`Stats-GetExerciseData error: ${error}`);
+    res.status(200).json({ success: true, data: output });
+  } catch (error: any) {
+    if (!error.statusCode)
+      console.log(`Get Exercise Data Stats - ${error.message}`);
     next(error);
   }
 };
 
-export const getDashboardData = async (req: Request, res: Response, next: NextFunction) => {
-
-  const query = [];
-
+export const getDashboardData = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     // Get the User Document from the Request
-    const user: UserDocument = req.user
-
-    query.push(user._id);
+    const user: UserDocument = req.user;
 
     // Get all user sets
     const sets = await SetModel.find({
@@ -137,9 +140,8 @@ export const getDashboardData = async (req: Request, res: Response, next: NextFu
       .populate("workout")
       .populate("exercise");
 
-    if (sets.length === 0) {
-      return next(new ErrorResponse("No sets found", 404));
-    }
+    // Check if any Sets were found
+    errorHandler.checkVariables({ sets }, "NotFound");
 
     // Compute total sets
     const completedSets = {
@@ -231,7 +233,6 @@ export const getDashboardData = async (req: Request, res: Response, next: NextFu
 
     const date21Days = new Date();
     const date14Days = new Date();
-    const dateCurrent = new Date();
 
     date21Days.setDate(date21Days.getDate() - 21);
     date14Days.setDate(date14Days.getDate() - 14);
@@ -298,25 +299,32 @@ export const getDashboardData = async (req: Request, res: Response, next: NextFu
       area: [topArea, topProgressArea, bestWorkout, topExercise],
     };
 
-    res.status(200).json({success: true, data: output});
+    res.status(200).json({ success: true, data: output });
   } catch (error) {
     console.log(error);
     next(error);
   }
 };
 
-export const getDashboardActivity = async (req: Request, res: Response, next: NextFunction) => {
-
-
-  const {range} = req.query;
+export const getDashboardActivity = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { range } = req.query;
 
   try {
-    const user: UserDocument = req.user
-
+    // Get the User Document from the request token
+    const user: UserDocument = req.user;
+    // Check that Range is included in the request
+    errorHandler.checkVariables({ range }, "PleaseProvide");
+    // Initialize the current date
     const currDate = new Date();
-
+    // Initialize the date range
     const startDate = new Date(
-      new Date().setDate(currDate.getDate() - dateRange[range as keyof typeof dateRange])
+      new Date().setDate(
+        currDate.getDate() - dateRange[range as keyof typeof dateRange]
+      )
     );
 
     // Get all user sets
@@ -329,11 +337,10 @@ export const getDashboardActivity = async (req: Request, res: Response, next: Ne
     })
       .populate("workout")
       .populate("exercise");
+    // Check that results are returned
+    errorHandler.checkVariables({ sets }, "NotFound");
 
-    if (sets.length === 0) {
-      return next(new ErrorResponse("No sets found", 404));
-    }
-
+    // Compute the Repetitions for each date
     const repsByDate = sets.reduce((acc: any, set: any) => {
       const date = set.workout.date.toISOString().split("T")[0];
       acc[date] = acc[date]
@@ -354,24 +361,32 @@ export const getDashboardActivity = async (req: Request, res: Response, next: Ne
       tempDate.setDate(tempDate.getDate() + 1);
     } while (tempDate < currDate);
 
-    res.status(200).json({success: true, data: output});
+    res.status(200).json({ success: true, data: output });
   } catch (error) {
     console.log(error);
     next(error);
   }
 };
 
-export const getTopExercises = async (req: Request, res: Response, next: NextFunction) => {
+export const getTopExercises = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     // Request query for body area and date range
-    const {area, range} = req.query;
+    const { area, range } = req.query;
     // Get User Document from Request
-    const user: UserDocument = req.user
+    const user: UserDocument = req.user;
+    // Check that Area and Range are provided
+    errorHandler.checkVariables({ area, range }, "PleaseProvide");
     // Get Current Date
     const currDate = new Date();
     // Get the Start Date using the range specified in query
     const startDate = new Date(
-      new Date().setDate(currDate.getDate() - dateRange[range as keyof typeof dateRange])
+      new Date().setDate(
+        currDate.getDate() - dateRange[range as keyof typeof dateRange]
+      )
     );
 
     // Get all user sets
@@ -385,11 +400,16 @@ export const getTopExercises = async (req: Request, res: Response, next: NextFun
       .populate("workout")
       .populate("exercise");
 
-    const strArea = area as string
+    // Check that results are returned
+    errorHandler.checkVariables({ sets }, "NotFound");
+
+    const strArea = area as string;
     const upperCaseArea = strArea.charAt(0).toUpperCase() + strArea.slice(1);
 
     const checkArea =
-      strArea === "all" ? ["Upper", "Lower", "Core", "Cardio"] : [upperCaseArea];
+      strArea === "all"
+        ? ["Upper", "Lower", "Core", "Cardio"]
+        : [upperCaseArea];
 
     const exerciseStats = sets.reduce((acc: any, set: any) => {
       if (!checkArea.includes(set.exercise.area)) {
@@ -427,7 +447,7 @@ export const getTopExercises = async (req: Request, res: Response, next: NextFun
       .sort((a: any, b: any) => b.repCount - a.repCount)
       .slice(0, 5);
 
-    res.status(200).json({success: true, data: output});
+    res.status(200).json({ success: true, data: output });
   } catch (error) {
     console.log(error);
     next(error);

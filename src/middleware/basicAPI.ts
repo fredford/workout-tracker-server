@@ -30,7 +30,7 @@ export const getAllDocuments = async (
     // Respond with the results from the query
     res.status(200).json({ success: true, data: results });
   } catch (error: any) {
-    if (!error.statusCode) console.log(`GET all ${modelObj.type} ${error}`);
+    if (!error.statusCode) console.log(`GET all -  ${modelObj.type} ${error}`);
     next(error);
   }
 };
@@ -54,14 +54,14 @@ export const getDocumentById = async (
     const result = await modelObj.model.findById(queryId).populate("user");
     // Check if a Document is returned
     errorHandler.checkVariables({ result }, "NotFound");
-    // Check that the Documen is correct
+    // Check that the Document is correct
     errorHandler.checkValidQuery(result, queryId);
     // Check that the Document is accessible to the User
     errorHandler.checkDocumentAccess(result, user);
     // Respond with the Document found
     res.status(200).json({ success: true, data: result });
   } catch (error: any) {
-    if (!error.statusCode) console.log(`Get By ID ${modelObj.type} ${error}`);
+    if (!error.statusCode) console.log(`Get By ID - ${modelObj.type} ${error}`);
     next(error);
   }
 };
@@ -84,7 +84,7 @@ export const postDocument = async (
     // Respond with the created Document
     res.status(201).json({ success: true, data: result });
   } catch (error: any) {
-    if (!error.statusCode) console.log(`POST new ${modelObj.type} ${error}`);
+    if (!error.statusCode) console.log(`POST new - ${modelObj.type} ${error}`);
     next(error);
   }
 };
@@ -123,7 +123,8 @@ export const deleteDocument = async (
     // Respond with success and a success message
     res.status(200).json({ success: true, data: "Success" });
   } catch (error: any) {
-    if (!error.statusCode) console.log(`Delete one ${modelObj.type} ${error}`);
+    if (!error.statusCode)
+      console.log(`Delete one - ${modelObj.type} ${error}`);
     next(error);
   }
 };
@@ -168,5 +169,9 @@ const Models: IModels = {
     createObj: (reqBody: JSON, user: UserDocument) => {
       return { user, ...reqBody };
     },
+  },
+  "/sets": {
+    model: Set,
+    type: "Set(s)",
   },
 };

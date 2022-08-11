@@ -1,9 +1,4 @@
 import express from "express";
-import {
-  addExercise,
-  getExercises,
-  deleteExercise,
-} from "../controllers/exercises";
 
 import { protect } from "../middleware/auth";
 

@@ -12,14 +12,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteSet = exports.addSet = void 0;
+exports.getSets = exports.addSet = void 0;
 // Models
 const Exercise_1 = __importDefault(require("../models/Exercise"));
 const Set_1 = __importDefault(require("../models/Set"));
 const Workout_1 = __importDefault(require("../models/Workout"));
 // Utilities
-const errorResponse_1 = require("../utils/errorResponse");
 const utils_1 = require("../utils/utils");
+const ErrorHandler_1 = __importDefault(require("../middleware/ErrorHandler"));
 /**
  * Request controller that handles adding a Set Document
  * @param {Request} req Object for the HTTP request received
@@ -32,13 +32,17 @@ const addSet = (req, res, next) => __awaiter(void 0, void 0, void 0, function* (
         const user = yield (0, utils_1.getUserFromReq)(req);
         // Get the request body information
         const { date, exerciseId, workoutId, amount } = req.body;
+        // Check the request body
+        ErrorHandler_1.default.checkVariables({ date, exerciseId, workoutId, amount }, "PleaseProvide");
         // Query for the provided Exercise and Workout
         const exercise = yield Exercise_1.default.findById(exerciseId);
         const workout = yield Workout_1.default.findById(workoutId);
-        // Check if an Exercise or Workout were received
-        if (!exercise || !workout) {
-            next(new errorResponse_1.ErrorResponse("Exercise or workout do not exist!", 404));
-        }
+        // Check that results are found
+        ErrorHandler_1.default.checkVariables({ exercise }, "NotFound");
+        ErrorHandler_1.default.checkVariables({ workout }, "NotFound");
+        // Check that the results are valid
+        ErrorHandler_1.default.checkValidQuery(exercise, exerciseId);
+        ErrorHandler_1.default.checkValidQuery(workout, workoutId);
         // Create the Set with Mongoose
         const set = yield Set_1.default.create({
             date,
@@ -55,23 +59,34 @@ const addSet = (req, res, next) => __awaiter(void 0, void 0, void 0, function* (
     }
 });
 exports.addSet = addSet;
-const deleteSet = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    const { setId } = req.params;
+const getSets = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        // Get the User Document from the request token
-        const user = yield (0, utils_1.getUserFromReq)(req);
-        const set = yield Set_1.default.findById(setId);
-        if (!set) {
-            next(new errorResponse_1.ErrorResponse("Set does not exist!", 400));
-        }
-        // Delete Set Document if it exists
-        const response = set === null || set === void 0 ? void 0 : set.deleteOne();
-        res.status(200).json({ success: true, data: response });
+        // Get the Sets for the workout
+        const user = req.user;
+        // Set the workout ID from query
+        const workoutId = req.query.id;
+        // Check that the workout ID is a valid ObjectId
+        ErrorHandler_1.default.checkQueryId(["ID", workoutId]);
+        // Query for the Workout passed
+        const workout = yield Workout_1.default.findById(workoutId);
+        // Check that the workout exists
+        ErrorHandler_1.default.checkVariables({ workout }, "NotFound");
+        // Check that the workout was correctly returned
+        ErrorHandler_1.default.checkValidQuery(workout, workoutId);
+        // Query database for workout ID related Set Documents
+        const results = yield Set_1.default.find({
+            user: user._id,
+            workout: workoutId,
+        })
+            .populate("workout")
+            .populate("exercise");
+        res.status(200).json({ success: true, data: results });
     }
     catch (error) {
-        console.log(error);
+        if (!error.statusCode)
+            console.log(`Get Sets ${error.message}`);
         next(error);
     }
 });
-exports.deleteSet = deleteSet;
+exports.getSets = getSets;
 //# sourceMappingURL=sets.js.map

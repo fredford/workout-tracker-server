@@ -26,7 +26,8 @@ export const getUser = async (
       success: true,
       data: user,
     });
-  } catch (error) {
+  } catch (error: any) {
+    if (!error.statusCode) console.log(`Get User - ${error}`);
     next(error);
   }
 };
@@ -47,32 +48,32 @@ export const updateUser = async (
     const user: UserDocument = await getUserFromReq(req);
 
     // JSON information for User updates
-    const updatedUser = req.body
-      ? req.body
-      : next(new ErrorResponse("Request body not provided", 400));
+    if (Object.keys(req.body).length === 0) {
+      throw new ErrorResponse("Request body not provided", 400);
+    }
 
     // Update name of the User
-    if (updatedUser.name && updatedUser.name.length > 0) {
-      user.name = updatedUser.name;
-    } else {
-      next(new ErrorResponse("Invalid name provided", 400));
+    if (req.body.name && req.body.name.length > 3) {
+      user.name = req.body.name;
+    } else if (req.body.name) {
+      throw new ErrorResponse("Invalid name provided", 400);
     }
 
     // Update password of the User
-    if (updatedUser.password && updatedUser.password.length > 5) {
-      user.password = updatedUser.password;
-    } else {
-      next(new ErrorResponse("Invalid password provided", 400));
+    if (req.body.password && req.body.password.length > 5) {
+      user.password = req.body.password;
+    } else if (req.body.password) {
+      throw new ErrorResponse("Invalid password provided", 400);
     }
 
     // Update theme of the User
     if (
-      updatedUser.theme &&
-      (updatedUser.theme === "light" || updatedUser.theme === "dark")
+      req.body.theme &&
+      (req.body.theme === "light" || req.body.theme === "dark")
     ) {
-      user.theme = updatedUser.theme;
+      user.theme = req.body.theme;
     } else {
-      next(new ErrorResponse("Invalid theme provided", 400));
+      throw new ErrorResponse("Invalid theme provided", 400);
     }
     // Save updates with Mongoose
     await user.save();
@@ -86,7 +87,8 @@ export const updateUser = async (
         theme: user.theme,
       },
     });
-  } catch (error) {
+  } catch (error: any) {
+    if (!error.statusCode) console.log(`Update User - ${error}`);
     next(error);
   }
 };
