@@ -6,6 +6,7 @@ export type WorkoutDocument = mongoose.Document & {
   date: Date; // Date the workout was created
   type: string; // Workout type eg. "Maintenance",
   user: Types.ObjectId; // Workout user ObjectId
+  removeOne: () => void; //
 };
 
 const WorkoutSchema = new mongoose.Schema({
@@ -27,15 +28,16 @@ const WorkoutSchema = new mongoose.Schema({
 /**
  * Middleware executed when deleteOne operation is called to clean up Sets
  */
-WorkoutSchema.pre("deleteOne", function (this: WorkoutDocument, next) {
+WorkoutSchema.methods.removeOne = async function (this: WorkoutDocument) {
   SetModel.deleteMany({ workout: { _id: this._id } })
-    .then()
+    .then((result) => {
+      console.log(result);
+    })
     .catch((error: Promise<void>) => {
       console.log(error);
     });
-
-  next();
-});
+  this.deleteOne();
+};
 
 const Workout = mongoose.model("Workout", WorkoutSchema);
 

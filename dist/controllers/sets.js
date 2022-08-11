@@ -17,8 +17,6 @@ exports.getSets = exports.addSet = void 0;
 const Exercise_1 = __importDefault(require("../models/Exercise"));
 const Set_1 = __importDefault(require("../models/Set"));
 const Workout_1 = __importDefault(require("../models/Workout"));
-// Utilities
-const utils_1 = require("../utils/utils");
 const ErrorHandler_1 = __importDefault(require("../middleware/ErrorHandler"));
 /**
  * Request controller that handles adding a Set Document
@@ -29,11 +27,11 @@ const ErrorHandler_1 = __importDefault(require("../middleware/ErrorHandler"));
 const addSet = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         // Get the User Document from the request token
-        const user = yield (0, utils_1.getUserFromReq)(req);
+        const user = req.user;
         // Get the request body information
         const { date, exerciseId, workoutId, amount } = req.body;
         // Check the request body
-        ErrorHandler_1.default.checkVariables({ date, exerciseId, workoutId, amount }, "PleaseProvide");
+        ErrorHandler_1.default.checkVariables({ exerciseId, workoutId, amount }, "PleaseProvide");
         // Query for the provided Exercise and Workout
         const exercise = yield Exercise_1.default.findById(exerciseId);
         const workout = yield Workout_1.default.findById(workoutId);
@@ -55,10 +53,19 @@ const addSet = (req, res, next) => __awaiter(void 0, void 0, void 0, function* (
         res.status(201).json({ success: true, data: set });
     }
     catch (error) {
+        if (!error.statusCode)
+            console.log(`Add Set - ${error.message}`);
         next(error);
     }
 });
 exports.addSet = addSet;
+/**
+ * Request controller that handles getting all SetDocuments for
+ * for a given Workout.
+ * @param {Request} req Object for the HTTP request received
+ * @param {Response} res Object for the HTTP response to be sent
+ * @param {NextFunction} next Control passing
+ */
 const getSets = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         // Get the Sets for the workout

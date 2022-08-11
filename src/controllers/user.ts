@@ -108,7 +108,7 @@ export const deleteUser = async (
     // Get the User Document from the request token
     const user: UserDocument = await getUserFromReq(req);
     // Delete User Document from the database
-    user.deleteOne();
+    await user.removeOne();
     // Respond success status of the request
     res.status(200).json({
       success: true,

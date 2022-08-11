@@ -103,7 +103,7 @@ const deleteUser = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
         // Get the User Document from the request token
         const user = yield (0, utils_1.getUserFromReq)(req);
         // Delete User Document from the database
-        user.deleteOne();
+        yield user.removeOne();
         // Respond success status of the request
         res.status(200).json({
             success: true,

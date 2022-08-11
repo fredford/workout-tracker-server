@@ -18,6 +18,7 @@ export type UserDocument = mongoose.Document & {
   resetPasswordToken: string; // User reset password token
   resetPasswordExpire: Date; // User reset password expiry date
 
+  removeOne: (this: UserDocument) => void;
   matchPasswords: (password: string) => boolean;
   getSignedToken: () => string;
   getResetPasswordToken: () => string;
@@ -68,34 +69,33 @@ UserSchema.pre("save", async function (next) {
   next();
 });
 
-// When deleteONe is called remove all associated Sets, Workouts, Exercises
-UserSchema.pre("deleteOne", function deleteOne(this: UserDocument, next) {
+UserSchema.methods.removeOne = async function (this: UserDocument) {
   SetModel.deleteMany({ user: { _id: this._id } })
-    .then(() => {
-      console.log("Done");
+    .then((result) => {
+      console.log(result);
     })
     .catch((error: Promise<void>) => {
       console.log(error);
     });
 
   Workout.deleteMany({ user: { _id: this._id } })
-    .then(() => {
-      console.log("Done");
+    .then((result) => {
+      console.log(result);
     })
     .catch((error: Promise<void>) => {
       console.log(error);
     });
 
   Exercise.deleteMany({ user: { _id: this._id } })
-    .then(() => {
-      console.log("Done");
+    .then((result) => {
+      console.log(result);
     })
     .catch((error: Promise<void>) => {
       console.log(error);
     });
 
-  next();
-});
+  this.deleteOne();
+};
 
 // Method to check if the provided password matches the stored password
 UserSchema.methods.matchPasswords = async function (password: string) {

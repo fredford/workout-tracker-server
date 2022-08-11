@@ -10,6 +10,8 @@ export type ExerciseDocument = mongoose.Document & {
   type: string; // Exercise type eg. "Repetitions",
   user: Types.ObjectId; // Exercise user ObjectId
   isAdmin: boolean; // Exercise created by admin
+
+  removeOne: (this: ExerciseDocument) => void;
 };
 
 // Model Schema for Exercises
@@ -37,16 +39,17 @@ const ExerciseSchema = new mongoose.Schema<ExerciseDocument>({
     required: [true, "Please provide if set by an Admin"],
   },
 });
-
 // Upon Exercise deletion remove all Sets associated to that Exercise
-ExerciseSchema.pre("deleteOne", function (this: ExerciseDocument, next) {
+ExerciseSchema.methods.removeOne = async function (this: ExerciseDocument) {
   SetModel.deleteMany({ exercise: { _id: this._id } })
-    .then()
+    .then((result) => {
+      console.log(result);
+    })
     .catch((error: Promise<void>) => {
       console.log(error);
     });
-  next();
-});
+  this.deleteOne();
+};
 
 const Exercise = mongoose.model<ExerciseDocument>("Exercise", ExerciseSchema);
 

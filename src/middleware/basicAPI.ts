@@ -144,7 +144,7 @@ export const deleteDocument = async (
 
     // Check if the User associated to the Exercise is the same as the requesting User
     if (result.user._id.toString() === user._id.toString()) {
-      result.deleteOne();
+      await result.removeOne();
     } else {
       throw new ErrorResponse(`User cannot delete ${modelObj.type}`, 403);
     }

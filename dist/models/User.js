@@ -13,10 +13,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.User = void 0;
+// Library imports
 const mongoose_1 = __importDefault(require("mongoose"));
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const crypto_1 = __importDefault(require("crypto"));
+// Mongoose Models
 const Workout_1 = __importDefault(require("./Workout"));
 const Set_1 = __importDefault(require("./Set"));
 const Exercise_1 = __importDefault(require("./Exercise"));
@@ -53,58 +55,90 @@ const UserSchema = new mongoose_1.default.Schema({
     resetPasswordToken: String,
     resetPasswordExpire: Date,
 });
+// On-save function updating the password
 UserSchema.pre("save", function (next) {
     return __awaiter(this, void 0, void 0, function* () {
         if (!this.isModified("password")) {
             next();
         }
+        // Add salt to the hash
         const salt = yield bcryptjs_1.default.genSalt(10);
         this.password = yield bcryptjs_1.default.hash(this.password, salt);
         next();
     });
 });
-UserSchema.pre("deleteOne", function deleteOne(next) {
-    const user = this;
-    Set_1.default.deleteMany({ user: { _id: this._id } })
-        .then(() => {
-        console.log("Done");
-    })
-        .catch((error) => {
-        console.log(error);
+UserSchema.methods.removeOne = function () {
+    return __awaiter(this, void 0, void 0, function* () {
+        Set_1.default.deleteMany({ user: { _id: this._id } })
+            .then((result) => {
+            console.log(result);
+        })
+            .catch((error) => {
+            console.log(error);
+        });
+        Workout_1.default.deleteMany({ user: { _id: this._id } })
+            .then((result) => {
+            console.log(result);
+        })
+            .catch((error) => {
+            console.log(error);
+        });
+        Exercise_1.default.deleteMany({ user: { _id: this._id } })
+            .then((result) => {
+            console.log(result);
+        })
+            .catch((error) => {
+            console.log(error);
+        });
+        this.deleteOne();
     });
-    Workout_1.default.deleteMany({ user: { _id: this._id } })
-        .then(() => {
-        console.log("Done");
-    })
-        .catch((error) => {
-        console.log(error);
-    });
-    Exercise_1.default.deleteMany({ user: { _id: this._id } })
-        .then(() => {
-        console.log("Done");
-    })
-        .catch((error) => {
-        console.log(error);
-    });
-    next();
-});
+};
+// // When deleteOne is called remove all associated Sets, Workouts, Exercises
+// UserSchema.pre("deleteOne", function deleteOne(this: UserDocument, next) {
+//   SetModel.deleteMany({ user: { _id: this._id } })
+//     .then(() => {
+//       console.log("Done");
+//     })
+//     .catch((error: Promise<void>) => {
+//       console.log(error);
+//     });
+//   Workout.deleteMany({ user: { _id: this._id } })
+//     .then(() => {
+//       console.log("Done");
+//     })
+//     .catch((error: Promise<void>) => {
+//       console.log(error);
+//     });
+//   Exercise.deleteMany({ user: { _id: this._id } })
+//     .then(() => {
+//       console.log("Done");
+//     })
+//     .catch((error: Promise<void>) => {
+//       console.log(error);
+//     });
+//   next();
+// });
+// Method to check if the provided password matches the stored password
 UserSchema.methods.matchPasswords = function (password) {
     return __awaiter(this, void 0, void 0, function* () {
         return yield bcryptjs_1.default.compare(password, this.password);
     });
 };
+// Retrieve a signed token from the JSON Web Token
 UserSchema.methods.getSignedToken = function () {
     var _a;
     return jsonwebtoken_1.default.sign({ id: this.id }, (_a = process.env.JWT_SECRET) !== null && _a !== void 0 ? _a : "", {
         expiresIn: `${process.env.JWT_EXPIRE}`,
     });
 };
+// Retrieve a token for resetting the user password
 UserSchema.methods.getResetPasswordToken = function () {
     const resetToken = crypto_1.default.randomBytes(20).toString("hex");
     this.resetPasswordToken = crypto_1.default
         .createHash("sha256")
         .update(resetToken)
         .digest("hex");
+    // Set a time for when the reset token expires
     this.resetPasswordExpire = Date.now() + 60 * (60 * 1000);
     return resetToken;
 };

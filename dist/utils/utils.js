@@ -13,10 +13,18 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getUserFromReq = void 0;
+// Library imports
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
+// Utilities
 const errorResponse_1 = require("./errorResponse");
-const User_1 = require("../models/User");
 const ErrorHandler_1 = __importDefault(require("../middleware/ErrorHandler"));
+// Mongoose Models
+const User_1 = require("../models/User");
+/**
+ * Retrieve the User Document for a given authorization token
+ * @param {Request} req Object for the HTTP request received
+ * @returns UserDocument
+ */
 function getUserFromReq(req) {
     var _a, _b, _c, _d;
     return __awaiter(this, void 0, void 0, function* () {
