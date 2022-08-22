@@ -8,6 +8,8 @@ export type SetDocument = mongoose.Document & {
   exercise: Types.ObjectId;
   user: Types.ObjectId;
   amount: string;
+
+  removeOne: (this: SetDocument) => void;
 };
 
 // Model Schema for Sets
@@ -37,6 +39,10 @@ const SetSchema = new mongoose.Schema<SetDocument>({
   },
 });
 
-const Set = mongoose.model("Set", SetSchema);
+SetSchema.methods.removeOne = async function (this: SetDocument) {
+  this.deleteOne();
+};
+
+const Set = mongoose.model<SetDocument>("Set", SetSchema);
 
 export default Set;

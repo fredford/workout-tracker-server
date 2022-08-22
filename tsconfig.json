@@ -14,10 +14,7 @@
     "strict": true,
     //
     "paths": {
-      "*": [
-        "node_modules/*",
-        "src/types/*"
-      ]
+      "*": ["node_modules/*", "src/types/*"]
     }
 
     /* Visit https://aka.ms/tsconfig to read more about this file */
@@ -131,12 +128,6 @@
 
     /* Skip type checking all .d.ts files. */
   },
-  "include": [
-    "src/**/*"
-  ],
-  "exclude": [
-    "./coverage",
-    "__tests__",
-    "jest.config.js"
-  ]
+  "include": ["src/**/*"],
+  "exclude": ["./coverage", "__tests__", "jest.config.js"]
 }
