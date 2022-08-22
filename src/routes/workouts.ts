@@ -12,16 +12,11 @@ import {
 } from "../middleware/basicAPI";
 
 import { lastWorkout } from "../controllers/workout";
+import { getAllWorkouts } from "../controllers/workouts";
 
-router
-  .route("/workouts")
-  .get(protect, getAllDocuments)
-  .post(protect, postDocument);
+router.route("/workouts").get(protect, getAllWorkouts).post(protect, postDocument);
 
-router
-  .route("/workout")
-  .get(protect, getDocumentById)
-  .delete(protect, deleteDocument);
+router.route("/workout").get(protect, getDocumentById).delete(protect, deleteDocument);
 
 router.route("/lastworkout").get(protect, lastWorkout);
 
