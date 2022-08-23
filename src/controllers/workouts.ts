@@ -31,12 +31,6 @@ export const getAllWorkouts = async (req: Request, res: Response, next: NextFunc
       user: { $in: query },
     }).sort({ date: -1 });
 
-    const workoutIds: mongoose.Types.ObjectId[] = workouts.map((workout) => workout._id);
-
-    // const sets: SetDocument[] = await SetModel.find({
-    //  workout: { $in: workoutIds },
-    // });
-
     const results: WorkoutResults = [];
 
     for (const workout of workouts) {

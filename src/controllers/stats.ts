@@ -13,11 +13,7 @@ interface IOutput {
   setProgression: { [key: string]: any };
 }
 
-export const getExerciseData = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const getExerciseData = async (req: Request, res: Response, next: NextFunction) => {
   try {
     // Get the User Document from the Request
     const user: UserDocument = req.user;
@@ -45,18 +41,14 @@ export const getExerciseData = async (
     };
 
     // Compute the total number of Reps performed in the Sets
-    const total = sets
-      .map((set) => Number(set.amount))
-      .reduce((prev, curr) => prev + curr);
+    const total = sets.map((set) => Number(set.amount)).reduce((prev, curr) => prev + curr);
 
     /* Assign Stats object information
      * Total - total number of repetitions performed
      * Average - average number of repetitions performed
      * Max - maximum number of repetitions performed */
     output.stats.Total = total;
-    output.stats.Average = (
-      Math.round((total / sets.length) * 100) / 100
-    ).toFixed(2);
+    output.stats.Average = (Math.round((total / sets.length) * 100) / 100).toFixed(2);
     output.stats.Max = Math.max(...sets.map((set) => Number(set.amount)));
 
     // Initialize date array
@@ -69,10 +61,7 @@ export const getExerciseData = async (
     // Iterate through each Set Document
     for (const set of sets) {
       // Format the stored Date
-      const date = new Date(set.date)
-        .toISOString()
-        .replace(/T/, " ")
-        .split(" ")[0];
+      const date = new Date(set.date).toISOString().replace(/T/, " ").split(" ")[0];
 
       // Check for the index of the date if it already exists in the date array
       const index = dateArr.indexOf(date);
@@ -115,17 +104,12 @@ export const getExerciseData = async (
 
     res.status(200).json({ success: true, data: output });
   } catch (error: any) {
-    if (!error.statusCode)
-      console.log(`Get Exercise Data Stats - ${error.message}`);
+    if (!error.statusCode) console.log(`Get Exercise Data Stats - ${error.message}`);
     next(error);
   }
 };
 
-export const getDashboardData = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const getDashboardData = async (req: Request, res: Response, next: NextFunction) => {
   try {
     // Get the User Document from the Request
     const user: UserDocument = req.user;
@@ -158,9 +142,7 @@ export const getDashboardData = async (
     };
 
     // Compute total workouts
-    const uniqueWorkouts = [
-      ...new Set(sets.map((set) => set.workout._id.toString())),
-    ];
+    const uniqueWorkouts = [...new Set(sets.map((set) => set.workout._id.toString()))];
 
     const completedWorkouts = {
       title: "Workouts",
@@ -188,9 +170,7 @@ export const getDashboardData = async (
 
     // Compute Highest Average
     const distinctSets = sets.reduce((acc: any, set: any) => {
-      acc[set.exercise.name] = acc[set.exercise.name]
-        ? (acc[set.exercise.name] += 1)
-        : 1;
+      acc[set.exercise.name] = acc[set.exercise.name] ? (acc[set.exercise.name] += 1) : 1;
       return acc;
     }, {});
 
@@ -257,8 +237,7 @@ export const getDashboardData = async (
     let maxAreaName = "Next Week";
 
     Object.keys(repsCurrWeek).map((a) => {
-      const percentDiff =
-        ((repsCurrWeek[a] - repsPrevWeek[a]) / repsPrevWeek[a]) * 100;
+      const percentDiff = ((repsCurrWeek[a] - repsPrevWeek[a]) / repsPrevWeek[a]) * 100;
 
       maxAreaName = percentDiff > maxAreaDiff ? a : maxAreaName;
       maxAreaDiff = percentDiff > maxAreaDiff ? percentDiff : maxAreaDiff;
@@ -274,9 +253,7 @@ export const getDashboardData = async (
     const repsByWorkout = sets.reduce((acc: any, set: any) => {
       const workoutId = set.workout._id.toString();
 
-      acc[workoutId] = acc[workoutId]
-        ? (acc[workoutId] += Number(set.amount))
-        : Number(set.amount);
+      acc[workoutId] = acc[workoutId] ? (acc[workoutId] += Number(set.amount)) : Number(set.amount);
 
       return acc;
     }, {});
@@ -303,11 +280,7 @@ export const getDashboardData = async (
   }
 };
 
-export const getDashboardActivity = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const getDashboardActivity = async (req: Request, res: Response, next: NextFunction) => {
   const { range } = req.query;
 
   try {
@@ -319,9 +292,7 @@ export const getDashboardActivity = async (
     const currDate = new Date();
     // Initialize the date range
     const startDate = new Date(
-      new Date().setDate(
-        currDate.getDate() - dateRange[range as keyof typeof dateRange]
-      )
+      new Date().setDate(currDate.getDate() - dateRange[range as keyof typeof dateRange])
     );
 
     // Get all user sets
@@ -340,9 +311,7 @@ export const getDashboardActivity = async (
     // Compute the Repetitions for each date
     const repsByDate = sets.reduce((acc: any, set: any) => {
       const date = set.workout.date.toISOString().split("T")[0];
-      acc[date] = acc[date]
-        ? (acc[date] += Number(set.amount))
-        : Number(set.amount);
+      acc[date] = acc[date] ? (acc[date] += Number(set.amount)) : Number(set.amount);
       return acc;
     }, {});
 
@@ -365,25 +334,19 @@ export const getDashboardActivity = async (
   }
 };
 
-export const getTopExercises = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const getTopExercises = async (req: Request, res: Response, next: NextFunction) => {
   try {
     // Request query for body area and date range
-    const { area, range } = req.query;
+    const { area, range, num } = req.query;
     // Get User Document from Request
     const user: UserDocument = req.user;
     // Check that Area and Range are provided
-    errorHandler.checkVariables({ area, range }, "PleaseProvide");
+    errorHandler.checkVariables({ area, range, num }, "PleaseProvide");
     // Get Current Date
     const currDate = new Date();
     // Get the Start Date using the range specified in query
     const startDate = new Date(
-      new Date().setDate(
-        currDate.getDate() - dateRange[range as keyof typeof dateRange]
-      )
+      new Date().setDate(currDate.getDate() - dateRange[range as keyof typeof dateRange])
     );
 
     // Get all user sets
@@ -403,10 +366,7 @@ export const getTopExercises = async (
     const strArea = area as string;
     const upperCaseArea = strArea.charAt(0).toUpperCase() + strArea.slice(1);
 
-    const checkArea =
-      strArea === "all"
-        ? ["Upper", "Lower", "Core", "Cardio"]
-        : [upperCaseArea];
+    const checkArea = strArea === "all" ? ["Upper", "Lower", "Core", "Cardio"] : [upperCaseArea];
 
     const exerciseStats = sets.reduce((acc: any, set: any) => {
       if (!checkArea.includes(set.exercise.area)) {
@@ -417,8 +377,7 @@ export const getTopExercises = async (
 
       if (acc[set.exercise.name]) {
         acc[set.exercise.name].setCount += 1;
-        acc[set.exercise.name].repCount =
-          acc[set.exercise.name].repCount + amount;
+        acc[set.exercise.name].repCount = acc[set.exercise.name].repCount + amount;
         acc[set.exercise.name].avgReps = (
           acc[set.exercise.name].repCount / acc[set.exercise.name].setCount
         ).toFixed(1);
@@ -440,9 +399,10 @@ export const getTopExercises = async (
       return acc;
     }, {});
 
-    const output = Object.values(exerciseStats)
-      .sort((a: any, b: any) => b.repCount - a.repCount)
-      .slice(0, 5);
+    let output = Object.values(exerciseStats).sort((a: any, b: any) => b.repCount - a.repCount);
+    if (num !== "all") {
+      output = output.slice(0, Number(num) ?? 5);
+    }
 
     res.status(200).json({ success: true, data: output });
   } catch (error) {
