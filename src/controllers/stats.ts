@@ -376,22 +376,22 @@ export const getTopExercises = async (req: Request, res: Response, next: NextFun
       const amount = Number(set.amount);
 
       if (acc[set.exercise.name]) {
-        acc[set.exercise.name].setCount += 1;
-        acc[set.exercise.name].repCount = acc[set.exercise.name].repCount + amount;
+        acc[set.exercise.name].Sets += 1;
+        acc[set.exercise.name].Reps = acc[set.exercise.name].Reps + amount;
         acc[set.exercise.name].avgReps = (
-          acc[set.exercise.name].repCount / acc[set.exercise.name].setCount
+          acc[set.exercise.name].Reps / acc[set.exercise.name].Sets
         ).toFixed(1);
 
-        if (amount > acc[set.exercise.name].maxReps) {
-          acc[set.exercise.name].maxReps = amount;
+        if (amount > acc[set.exercise.name].Max) {
+          acc[set.exercise.name].Max = amount;
         }
       } else {
         acc[set.exercise.name] = {
-          setCount: 1,
-          repCount: amount,
-          avgReps: amount,
+          Sets: 1,
+          Reps: amount,
+          Avg: amount,
           area: set.exercise.area,
-          maxReps: amount,
+          Max: amount,
           exerciseId: set.exercise._id.toString(),
           name: set.exercise.name,
         };
@@ -399,7 +399,7 @@ export const getTopExercises = async (req: Request, res: Response, next: NextFun
       return acc;
     }, {});
 
-    let output = Object.values(exerciseStats).sort((a: any, b: any) => b.repCount - a.repCount);
+    let output = Object.values(exerciseStats).sort((a: any, b: any) => b.Reps - a.Reps);
     if (num !== "all") {
       output = output.slice(0, Number(num) ?? 5);
     }
