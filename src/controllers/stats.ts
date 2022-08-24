@@ -411,6 +411,38 @@ export const getTopExercises = async (req: Request, res: Response, next: NextFun
   }
 };
 
+export const getRepsByArea = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const user: UserDocument = req.user;
+    // Get all user sets
+    const sets: any = await SetModel.find({
+      user: user._id,
+    })
+      .populate("workout")
+      .populate("exercise");
+
+    // Check that results are returned
+    errorHandler.checkVariables({ sets }, "NotFound");
+
+    // Output initialization
+    const output: { [k: string]: any } = {};
+    output.Upper = 0;
+    output.Lower = 0;
+    output.Core = 0;
+    output.Cardio = 0;
+
+    for (const set of sets) {
+      // console.log(set.exercise?.area);
+      output[set.exercise.area] += Number(set.amount);
+    }
+
+    res.status(200).json({ success: true, data: output });
+  } catch (error: any) {
+    console.log(error);
+    next(error);
+  }
+};
+
 const dateRange = {
   week: 7,
   month: 30,
