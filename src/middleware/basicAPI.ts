@@ -4,10 +4,13 @@ import { Request, Response, NextFunction } from "express";
 import Exercise from "../models/Exercise";
 import Workout from "../models/Workout";
 import SetModel from "../models/Set";
+import Weight from "../models/Weight";
+import Steps from "../models/Steps";
 import { UserDocument } from "../models/User";
 // Utilities
 import errorHandler from "./ErrorHandler";
 import { ErrorResponse } from "../utils/errorResponse";
+import { model } from "mongoose";
 
 /**
  * Request controller for finding and returning all
@@ -16,11 +19,7 @@ import { ErrorResponse } from "../utils/errorResponse";
  * @param {Response} res Object for the HTTP response to be sent
  * @param {NextFunction} next Control passing
  */
-export const getAllDocuments = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const getAllDocuments = async (req: Request, res: Response, next: NextFunction) => {
   // Obtain the object for the given Model type
   const modelObj = Models[req.url];
 
@@ -50,11 +49,7 @@ export const getAllDocuments = async (
  * @param {Response} res Object for the HTTP response to be sent
  * @param {NextFunction} next Control passing
  */
-export const getDocumentById = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const getDocumentById = async (req: Request, res: Response, next: NextFunction) => {
   // Get the request URL from the path
   const reqUrl = req.url.split("?")[0];
   // Obtain the object for the given Model type
@@ -88,25 +83,22 @@ export const getDocumentById = async (
  * @param {Response} res Object for the HTTP response to be sent
  * @param {NextFunction} next Control passing
  */
-export const postDocument = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  // Obtain the object for the given Model type
-  const modelObj = Models[req.url];
-
+export const postDocument = async (req: Request, res: Response, next: NextFunction) => {
   try {
+    // Obtain the object for the given Model type
+    const modelObj = Models[req.url];
+
+    if (modelObj === undefined) {
+      throw new ErrorResponse("Not found", 404);
+    }
     // Get the User Document from the Protected Request
     const user: UserDocument = req.user;
     // Perform the Document create with Mongoose
-    const result = await modelObj.model.create(
-      Models[req.url].createObj(req.body, user)
-    );
+    const result = await modelObj.model.create(Models[req.url].createObj(req.body, user));
     // Respond with the created Document
     res.status(201).json({ success: true, data: result });
   } catch (error: any) {
-    if (!error.statusCode) console.log(`POST new - ${modelObj.type} ${error}`);
+    if (!error.statusCode) console.log(`POST new - ${error}`);
     next(error);
   }
 };
@@ -118,17 +110,15 @@ export const postDocument = async (
  * @param {Response} res Object for the HTTP response to be sent
  * @param {NextFunction} next Control passing
  */
-export const deleteDocument = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  // Get the request URL from the path
-  const reqUrl = req.url.split("?")[0];
-  // Obtain the object for the given Model type
-  const modelObj = Models[reqUrl];
-
+export const deleteDocument = async (req: Request, res: Response, next: NextFunction) => {
   try {
+    // Get the request URL from the path
+    const reqUrl = req.url.split("?")[0];
+    // Obtain the object for the given Model type
+    const modelObj = Models[reqUrl];
+    if (modelObj === undefined) {
+      throw new ErrorResponse("Not found", 404);
+    }
     // Get User Document from Protected Request
     const user: UserDocument = req.user;
     // Check that the exercise ID is a valid ObjectId
@@ -152,8 +142,7 @@ export const deleteDocument = async (
     // Respond with success and a success message
     res.status(200).json({ success: true, data: "Success" });
   } catch (error: any) {
-    if (!error.statusCode)
-      console.log(`Delete one - ${modelObj.type} ${error}`);
+    if (!error.statusCode) console.log(`Delete one - ${error}`);
     next(error);
   }
 };
@@ -201,5 +190,19 @@ const Models: IModels = {
   "/sets": {
     model: SetModel,
     type: "Set(s)",
+  },
+  "/weight": {
+    model: Weight,
+    type: "Weight",
+    createObj: (reqBody: JSON, user: UserDocument) => {
+      return { user, ...reqBody };
+    },
+  },
+  "/steps": {
+    model: Steps,
+    type: "Steps",
+    createObj: (reqBody: JSON, user: UserDocument) => {
+      return { user, ...reqBody };
+    },
   },
 };
