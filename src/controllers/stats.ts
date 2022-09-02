@@ -2,6 +2,7 @@
 import { NextFunction, Request, Response } from "express";
 // Mongoose Models
 import SetModel from "../models/Set";
+import Steps from "../models/Steps";
 import { UserDocument } from "../models/User";
 // Utilities
 import errorHandler from "../middleware/ErrorHandler";
@@ -268,9 +269,24 @@ export const getDashboardData = async (req: Request, res: Response, next: NextFu
       data: repsByWorkout[maxWorkout],
     };
 
+    const steps = await Steps.find({
+      user: user._id,
+    });
+
+    // Check if any Sets were found
+    errorHandler.checkVariables({ steps }, "NotFound");
+
+    const currSteps = steps.reduce((acc, obj) => acc + Number(obj.amount), 0);
+
+    // TODO add Goal REPS and STEPS
+    const goalSteps = 2000000;
+    const goalReps = 40000;
+
     const output = {
       basic: [totalRepetitions, topAverage, completedSets, completedWorkouts],
       area: [topArea, topProgressArea, bestWorkout, topExercise],
+      steps: { current: currSteps, goal: goalSteps },
+      reps: { current: totalReps, goal: goalReps },
     };
 
     res.status(200).json({ success: true, data: output });
